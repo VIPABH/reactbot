@@ -6,7 +6,7 @@ api_id = int(os.getenv("API_ID", 0))
 api_hash = os.getenv("API_HASH", "")
 bot_token = os.getenv("bot_token", "")
 wfffp = 1910015590
-MAX = 2
+MAX = 15
 REACTBOT = TelegramClient(
     "REACTBOT",
     api_id,
@@ -70,7 +70,6 @@ async def init_clients():
             except Exception as e:
                 print(f"❌ فشل تشغيل {session_name}: {e}")
     await sync_users()
-    print("✨ جميع الحسابات تعمل الآن وجاهزة للتحكم!")
 async def main():
     await init_clients()
     all_clients = [bot, REACTBOT, mainABH] + ABHS
