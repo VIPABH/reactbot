@@ -6,7 +6,7 @@ api_id = int(os.getenv("API_ID", 0))
 api_hash = os.getenv("API_HASH", "")
 bot_token = os.getenv("bot_token", "")
 wfffp = 1910015590
-MAX = 15
+MAX = 16
 REACTBOT = TelegramClient(
     "REACTBOT",
     api_id,
