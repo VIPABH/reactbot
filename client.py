@@ -24,7 +24,6 @@ r = redis.Redis(
 api_id = int(os.getenv("API_ID"))
 api_hash = os.getenv("API_HASH")
 clients = {}
-clients['wfffp'] = mainABH
 for i in range(1, 15):
     api_id_i = os.getenv(f"API_ID{i}")
     api_hash_i = os.getenv(f"API_HASH{i}")
