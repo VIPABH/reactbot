@@ -65,10 +65,6 @@ async def start_everything():
     loop = asyncio.get_running_loop()
     loop.set_exception_handler(handle_async_exception)
     await bot.start(bot_token=bot_token)
-    load_all_filters()
-    bot_info = await bot()
-    await hint(f'تم تشغيل البوت {datetime.datetime.now(baghdad_tz).strftime('%H:%M:%S')}')
-    print(f"{bot_info.first_name} is online at {datetime.datetime.now(baghdad_tz).strftime('%H:%M')}")
     await reactbot.run_until_disconnected()
 if __name__ == "__main__":
     loop = asyncio.new_event_loop()
