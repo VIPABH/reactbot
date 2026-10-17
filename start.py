@@ -22,6 +22,7 @@ def buttons(e):
 @ABH.on(events.NewMessage(pattern=r'^/start$'))
 async def start(e):
     await send(e, f'اهلا عزيزي ( {await ment(e)} ) اني بوت مال رياكشن وظيفتي اضيفلك رياكشنات ومشاهدات لقناتك', buttons=buttons(e))
+    session[id] = {}
 session = {}
 @ABH.on(events.CallbackQuery(pattern=b'^(add_channle|del_channle|channles|settings|back)$'))
 async def start_callback(e):
