@@ -1,9 +1,6 @@
-import pytz, asyncio, uvloop, traceback, logging
-import datetime
+import asyncio, uvloop, traceback, logging
 from client import *
 from start import *
-baghdad_tz = pytz.timezone("Asia/Baghdad")
-start_time = datetime.datetime.now(baghdad_tz)
 class TelegramLogsHandler(logging.Handler):
     def emit(self, record):
         if record.levelno >= logging.ERROR:
@@ -54,12 +51,6 @@ async def shutdown(loop):
     await asyncio.gather(*tasks, return_exceptions=True)
     loop.stop()
 asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-@bot.on(events.NewMessage(pattern='وقت التشغيل', from_users=[wfffp]))
-async def timerun(event):
-    now = datetime.datetime.now(baghdad_tz)
-    diff = now - start_time
-    duration_text = str(diff).split(".")[0]
-    await event.reply(f"⏳ **مدة التشغيل:** {duration_text}")
 def handle_async_exception(loop, context):
     exception = context.get("exception")
     if exception:
