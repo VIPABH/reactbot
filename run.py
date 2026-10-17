@@ -38,10 +38,10 @@ async def send_error(error_text, source="غير معروف"):
             f"```python\n{clean_error}\n```\n"
             f"__________________________"
         )            
-        await bot.send_message(wfffp, report)
+        await ABH.send_message(wfffp, report)
     except Exception as e:
         try:
-            await bot.send_message(wfffp, f"خطأ خام من {source}:\n\n{error_text[:3800]}")
+            await ABH.send_message(wfffp, f"خطأ خام من {source}:\n\n{error_text[:3800]}")
         except:
             print(f"❌ فشل الإرسال النهائي تماماً: {e}")
 async def shutdown(loop):
@@ -64,8 +64,8 @@ def handle_async_exception(loop, context):
 async def start_everything():
     loop = asyncio.get_running_loop()
     loop.set_exception_handler(handle_async_exception)
-    await bot.start(bot_token=bot_token)
-    await bot.run_until_disconnected()
+    await ABH.start(bot_token=bot_token)
+    await ABH.run_until_disconnected()
 if __name__ == "__main__":
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
