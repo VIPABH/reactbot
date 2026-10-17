@@ -3,31 +3,36 @@ from telethon.tl.functions.channels import GetParticipantRequest
 from telethon.tl.types import ChannelParticipantsMentions
 from telethon import TelegramClient, events, Button
 from telethon.errors import UserNotParticipantError
+from telethon.tl.types import (
+    MessageExtendedMediaPreview, DocumentAttributeAudio, DocumentAttributeSticker,
+    Message, MessageMediaPhoto, MessageMediaDocument, MessageMediaGeo,
+    DocumentAttributeVideo, DocumentAttributeAnimated,
+    MessageMediaPoll, MessageExtendedMedia,)
 from dateutil.relativedelta import relativedelta
 from datetime import datetime
+import asyncio, json, inspect
 from telethon import types
 from client import *
-import asyncio, json
 wfffp = 1910015590
 channels = [
     'ANYMOUSupdate', 
-    'x04ou']
-async def is_in_channel(user_id, channel_username, ABH):
+    'x04ou',
+    ]
+async def is_in_channel(user_id, channel_username):
     try:
         return await ABH(GetParticipantRequest(channel=channel_username, participant=user_id))
     except UserNotParticipantError:
         return False
     except:
         return False
-async def is_user(e, ABH):
-    if not e.is_private:
-        raise events.StopPropagation
+async def is_user(e):
+    if not e.is_private:raise events.StopPropagation
     uid = e.sender_id
     me = await ABH.get_me()
     key = f"users:{me.id}"
     if r.get(f"{me.id}:{uid}"):return True
     results = await asyncio.gather(
-        *(is_in_channel(uid, ch, BUTTON_BOT) for ch in channels))
+        *(is_in_channel(uid, ch) for ch in channels))
     buttons = [
         [Button.url(f"اشترك في {ch}", url=f"https://t.me/{ch}")]
         for ch, joined in zip(channels, results)
@@ -36,7 +41,7 @@ async def is_user(e, ABH):
         await e.reply(
             "🔐 للوصول إلى خدمات البوت يجب الاشتراك في القنوات التالية:",
             buttons=buttons,)
-        return False
+        raise events.StopPropagation
     r.set(f"{me.id}:{uid}", 1, ex=120)
     if r.sismember(key, e.sender_id):return True
     r.sadd(key, e.sender_id)
@@ -47,7 +52,7 @@ async def is_user(e, ABH):
     else:
         await ABH.send_message(e.chat_id, message=caption, reply_to=e.id)
     return True
-async def get_profile_photo(id, ABH, user=None):
+async def get_profile_photo(id, user=None):
     photos = []
     try:
         user = user if user else await ABH.get_entity(id)
@@ -58,8 +63,27 @@ async def get_profile_photo(id, ABH, user=None):
             return None
     except:
             return None
+async def get_input_media(media_data):
+    if not media_data or not isinstance(media_data, dict):return None
+    m_id = int(media_data['id'])
+    m_hash = int(media_data['hash'])
+    m_ref = bytes.fromhex(media_data['ref'])
+    if media_data['type'] == "doc":
+        return types.InputDocument(id=m_id, access_hash=m_hash, file_reference=m_ref)
+    return types.InputPhoto(id=m_id, access_hash=m_hash, file_reference=m_ref)
+async def extract_media_data(e):
+    if not e.media: return None
+    if isinstance(e.media, types.MessageMediaDocument):
+        doc = e.media.document
+        return {"type": "doc", "id": doc.id, "hash": doc.access_hash, "ref": doc.file_reference.hex()}
+    elif isinstance(e.media, types.MessageMediaPhoto):
+        photo = e.media.photo
+        return {"type": "photo", "id": photo.id, "hash": photo.access_hash, "ref": photo.file_reference.hex()}
+    return None
 async def ment(entity):
-  if hasattr(entity, "sender"):
+  if isinstance(entity, (int, str)) and str(entity).lstrip('-').isdigit():
+    user = await ABH.get_entity(int(entity))
+  elif hasattr(entity, "sender"):
     user = await entity.get_sender()
   else:
     user = entity
@@ -68,14 +92,16 @@ async def ment(entity):
   first_name = getattr(user, "first_name", "مستخدم") if user else "مستخدم"
   name = p.get("name") if p and p.get("name") else first_name
   return f"[{name}](tg://user?id={user_id})"
-def custom_emoji(emoji):
+async def custom_emoji(e, text, emoji, buttons=None):
     selected = random.choice(emoji) if isinstance(emoji, (list, tuple)) else emoji
-    return f'<tg-emoji emoji-id={selected}>⬆️</tg-emoji>'
+    await e.reply(
+        f'{text} <tg-emoji emoji-id="{selected}">⬆️</tg-emoji>', 
+        buttons=buttons, parse_mode='html')
 def profile(user_id):
     data = r.get(f"user:{user_id}")
     return json.loads(data) if data else None
-async def hint(ABH, text):
-    await ABH.send_message(wfffp, text)
+async def hint(text):
+    await ABH.send_message(wfffp, str(text))
 red = "danger"
 green = "success"
 blue = "primary"
@@ -115,7 +141,12 @@ async def get_input_media(media_data):
     if media_data['type'] == "doc":
         return types.InputDocument(id=m_id, access_hash=m_hash, file_reference=m_ref)
     return types.InputPhoto(id=m_id, access_hash=m_hash, file_reference=m_ref)
-async def PROFILE_SEND(ABH, e, text, buttons=None, id=None):
+async def get_channel_owner(chat):
+    async for user in ABH.iter_participants(chat, filter=ChannelParticipantsAdmins()):
+        if isinstance(user.participant, ChannelParticipantCreator):
+            return user
+    return None
+async def send(e, text, buttons=None, id=None, edit=None):
     user_id = id or e.sender_id
     msg_id = getattr(e, 'message_id', None) or (e.message.id if hasattr(e, 'message') else e.id)
     msg = None
@@ -123,6 +154,8 @@ async def PROFILE_SEND(ABH, e, text, buttons=None, id=None):
         user_entity = await ABH.get_entity(user_id)
         photos = await ABH.get_profile_photos(user_entity, limit=1)
         if photos:
+            if edit:
+                return await e.edit(text, file=photos[0], buttons=buttons)
             msg = await ABH.send_file(
                 e.chat_id, 
                 file=photos[0], 
@@ -132,12 +165,15 @@ async def PROFILE_SEND(ABH, e, text, buttons=None, id=None):
             )
             return msg
     except Exception as err:
-        await hint(ABH, f"فشلت محاولة إرسال افتار الـ ID: {err}")
+        await hint(f"فشلت محاولة إرسال افتار الـ ID: {err}")
     try:
         p = profile(user_id)
         if p and p.get('media'):
             input_media = await get_input_media(p.get('media'))
             if input_media:
+                if edit:
+                    return await e.edit(text, file=input_media, buttons=buttons)
+                
                 msg = await ABH.send_file(
                     e.chat_id, 
                     file=input_media, 
@@ -147,11 +183,58 @@ async def PROFILE_SEND(ABH, e, text, buttons=None, id=None):
                 )
                 return msg
     except Exception as err:
-        await hint(ABH, f"فشلت محاولة إرسال ميديا الـ profile: {err}")
+        await hint(f"فشلت محاولة إرسال ميديا الـ profile: {err}")
+    if edit:
+        return await e.edit(text, buttons=buttons)
     msg = await e.reply(text, buttons=buttons)
     return msg
-async def get_channel_owner(chat):
-    async for user in REACTBOT.iter_participants(chat, filter=ChannelParticipantsAdmins()):
-        if isinstance(user.participant, ChannelParticipantCreator):
-            return user
-    return None
+def chunk_list(lst, n=2):
+    return [lst[i:i + n] for i in range(0, len(lst), n)]
+def lprint(*args, **kwargs):
+    formatted_args = [str(arg) for arg in args]
+    formatted_kwargs = [f"{key}={value}" for key, value in kwargs.items()]
+    all_items = formatted_args + formatted_kwargs
+    print(" , ".join(all_items))
+def print_all():
+  caller_frame = inspect.currentframe().f_back
+  func_name = caller_frame.f_code.co_name
+  caller_locals = caller_frame.f_locals
+  items = list(caller_locals.items())[1:]
+  formatted_items = []
+  for k, v in items:
+    if not isinstance(v, (str, int, float, bool, list, dict, set, tuple)):
+      continue
+    formatted_items.append(f"{k}={v}")
+  result = " , ".join(formatted_items)
+  print(f"متغيرات دالة ( {func_name} ): \n{result}")
+def ordinal_arabic_female(n):
+    if not (1 <= n <= 100):
+        return None
+    ones = [
+        "", "الأولى", "الثانية", "الثالثة", "الرابعة", "الخامسة",
+        "السامة", "السابعة", "الثامنة", "التاسعة", "العاشرة"
+    ]    
+    tens = {
+        20: "العشرون", 30: "الثلاثون", 40: "الأربعون", 
+        50: "الخمسون", 60: "الستون", 70: "السبعون", 
+        80: "الثمانون", 90: "التسعون"
+    }
+    if n == 100:
+        return "المائة"
+    if n <= 10:
+        return ones[n]
+    if n in tens:
+        return tens[n]
+    if 11 <= n <= 19:
+        units_teen = [
+            "", "الحادية", "الثانية", "الثالثة", "الرابعة", 
+            "الخامسة", "السادسة", "السابعة", "الثامنة", "التاسعة"
+        ]
+        return f"{units_teen[n % 10]} عشرة"
+    units_compound = [
+        "", "الحادية", "الثانية", "الثالثة", "الرابعة", 
+        "الخامسة", "السادسة", "السابعة", "الثامنة", "التاسعة"
+    ]    
+    ten_part = (n // 10) * 10
+    one_part = n % 10
+    return f"{units_compound[one_part]} و{tens[ten_part]}"
