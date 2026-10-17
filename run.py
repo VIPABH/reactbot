@@ -65,7 +65,7 @@ async def start_everything():
     loop = asyncio.get_running_loop()
     loop.set_exception_handler(handle_async_exception)
     await bot.start(bot_token=bot_token)
-    await reactbot.run_until_disconnected()
+    await bot.run_until_disconnected()
 if __name__ == "__main__":
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
