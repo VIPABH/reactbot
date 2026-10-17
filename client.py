@@ -4,7 +4,7 @@ api_id = int(os.getenv("API_ID"))
 api_hash = os.getenv("API_HASH")
 bot_token = os.getenv("bot_token")
 wfffp = 1910015590
-bot = TelegramClient(
+ABH = TelegramClient(
     "REACTBOT",
     api_id,
     api_hash,
@@ -21,8 +21,8 @@ r = redis.Redis(
 )
 clients = {}
 async def main():
-    await bot.start(bot_token=bot_token)
-    print("✅ تم تشغيل البوت الأساسي (bot)")
+    await ABH.start(bot_token=bot_token)
+    print("✅ تم تشغيل البوت الأساسي (ABH)")
     for i in range(1, 16):
         api_id_i = os.getenv(f"API_ID{i}")
         api_hash_i = os.getenv(f"API_HASH{i}")
@@ -59,7 +59,7 @@ async def main():
     ABH14 = clients.get("code14")
     ABH15 = clients.get("code15")    
     ABHS = [ABH1, ABH2, ABH3, ABH4, ABH5, ABH6, ABH7, ABH8, ABH9, ABH10, ABH11, ABH12, ABH13, ABH14, ABH15]
-    all_clients = [bot] + [c for c in ABHS if c is not None]
+    all_clients = [ABH] + [c for c in ABHS if c is not None]
     await asyncio.gather(*(client.run_until_disconnected() for client in all_clients))
 if __name__ == "__main__":
     asyncio.run(main())
