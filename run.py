@@ -1,5 +1,7 @@
 import pytz, asyncio, uvloop, traceback, logging
 import datetime
+from client import *
+from start import *
 baghdad_tz = pytz.timezone("Asia/Baghdad")
 start_time = datetime.datetime.now(baghdad_tz)
 class TelegramLogsHandler(logging.Handler):
@@ -39,10 +41,10 @@ async def send_error(error_text, source="غير معروف"):
             f"```python\n{clean_error}\n```\n"
             f"__________________________"
         )            
-        await ABH.send_message(int(r.get('channel_hint')), report)
+        await bot.send_message(wfffp, report)
     except Exception as e:
         try:
-            await ABH.send_message(int(r.get('channel_hint')), f"خطأ خام من {source}:\n\n{error_text[:3800]}")
+            await bot.send_message(wfffp, f"خطأ خام من {source}:\n\n{error_text[:3800]}")
         except:
             print(f"❌ فشل الإرسال النهائي تماماً: {e}")
 async def shutdown(loop):
@@ -52,7 +54,7 @@ async def shutdown(loop):
     await asyncio.gather(*tasks, return_exceptions=True)
     loop.stop()
 asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-@ABH.on(events.NewMessage(pattern='وقت التشغيل', from_users=[wfffp]))
+@bot.on(events.NewMessage(pattern='وقت التشغيل', from_users=[wfffp]))
 async def timerun(event):
     now = datetime.datetime.now(baghdad_tz)
     diff = now - start_time
@@ -71,12 +73,12 @@ def handle_async_exception(loop, context):
 async def start_everything():
     loop = asyncio.get_running_loop()
     loop.set_exception_handler(handle_async_exception)
-    await ABH.start(bot_token=bot_token)
+    await bot.start(bot_token=bot_token)
     load_all_filters()
     bot_info = await bot()
     await hint(f'تم تشغيل البوت {datetime.datetime.now(baghdad_tz).strftime('%H:%M:%S')}')
     print(f"{bot_info.first_name} is online at {datetime.datetime.now(baghdad_tz).strftime('%H:%M')}")
-    await ABH.run_until_disconnected()
+    await reactbot.run_until_disconnected()
 if __name__ == "__main__":
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
