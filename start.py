@@ -1,10 +1,10 @@
 from helpers import *
 from client import *
 info = create('data.json')
-@ABH.on(events.NewMessage)
+@bot.on(events.NewMessage)
 async def _(e):
     await is_user(e)
-@ABH.on(events.CallbackQuery)
+@bot.on(events.CallbackQuery)
 async def _(e):
     await is_user(e)
 back = [Button.inline('الرجوع', data='back', style=blue, icon=5352759161945867747)]
@@ -19,11 +19,11 @@ def buttons(e):
             Button.inline('الاعدادات', data='settings', style=green, icon=5258096772776991776),
             ]
     return chunk_list(b)
-@ABH.on(events.NewMessage(pattern=r'^/start$'))
+@bot.on(events.NewMessage(pattern=r'^/start$'))
 async def start(e):
     await send(e, f'اهلا عزيزي ( {await ment(e)} ) اني بوت مال رياكشن وظيفتي اضيفلك رياكشنات ومشاهدات لقناتك', buttons=buttons(e))
 sesion = {}
-@ABH.on(events.CallbackQuery(pattern=b'^(add_channle|del_channle|channles|settings|back)$'))
+@bot.on(events.CallbackQuery(pattern=b'^(add_channle|del_channle|channles|settings|back)$'))
 async def start_callback(e):
     id = e.sender_id
     data = e.data.decode('utf-8')
@@ -35,7 +35,7 @@ async def start_callback(e):
     elif data == 'channles':
         if not info.get(str(id)):return await e.edit('ماعندك قنوات مضافة', buttons=back)
         ids = [id for id in info[str(id)]]
-        chats = await ABH.get_entity(ids)
+        chats = await bot.get_entity(ids)
         b = []
         text = 'قنواتك المضافة🗒️:'
         for chat in chats:
@@ -49,6 +49,6 @@ async def start_callback(e):
     elif data == "settings":
         if not info.get(str(id)):return await e.edit('ماعندك قنوات مضافة', buttons=back)
         ids = [id for id in info[str(id)]]
-        chats = await ABH.get_entity(ids)
+        chats = await bot.get_entity(ids)
         b = [Buttons.inline(chat.title, data=f'channle:{chat.id}') for chat in chats]
         return await e.edit('اختر قناة لتعديل اعداداتها', buttons=b)
