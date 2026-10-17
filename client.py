@@ -25,7 +25,7 @@ r = redis.Redis(
 bot = TelegramClient("botcode", api_id, api_hash)
 mainABH = TelegramClient("wfffp", api_id, api_hash)
 clients = {'wfffp': mainABH}
-sessions = [f'code{num}' for num in range(1, MAX + 1)]
+sessions = [f'code{num}' for num in range(1, MAX)]
 for i, session in enumerate(sessions, start=1):
     api_id_i = os.getenv(f"API_ID{i}", api_id)
     api_hash_i = os.getenv(f"API_HASH{i}", api_hash)
@@ -46,8 +46,6 @@ async def sync_users():
         except Exception as e:
             print(f"Error syncing user: {e}")
 async def init_clients():
-    """تشغيل جميع البوتات والحسابات دفعة واحدة"""
-    print("🚀 جاري بدء تشغيل الحسابات والبوتات...")
     if not bot.is_connected():
         await bot.start(bot_token=bot_token)
         print("✅ تم تشغيل البوت الأساسي (bot)")
