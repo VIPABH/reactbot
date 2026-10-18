@@ -29,11 +29,11 @@ def buttons(e):
             Button.inline('الاعدادات', data='settings', style=green, icon=5258096772776991776),
             ]
     return chunk_list(b)
+session = {}
 @ABH.on(events.NewMessage(pattern=r'^/start$'))
 async def start(e):
     await send(e, f'اهلا عزيزي ( {await ment(e)} ) اني بوت مال رياكشن وظيفتي اضيفلك رياكشنات ومشاهدات لقناتك', buttons=buttons(e))
     session[e.sender_id] = {}
-session = {}
 @ABH.on(events.CallbackQuery(pattern=b'^(add_channle|del_channle|channles|settings|back)$'))
 async def start_callback(e):
     id = e.sender_id
