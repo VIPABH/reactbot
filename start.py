@@ -37,6 +37,8 @@ async def start(e):
 @ABH.on(events.CallbackQuery(pattern=b'^(add_channle|del_channle|channles|settings|back)$'))
 async def start_callback(e):
     id = e.sender_id
+    if not session.get(id):
+        session[e.sender_id] = {}
     data = e.data.decode('utf-8')
     if data == 'back':
         return await e.edit('تفضل الازرار كدامك', buttons=buttons(e))
