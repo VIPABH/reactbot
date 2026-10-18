@@ -91,6 +91,10 @@ async def _filter(e):
         chan_key = str(chat.id)
         if not isinstance(info.get(sid), dict):
             info[sid] = {}
+        if step == 'del_channle':
+            if session.get(id):
+                del session[id]
+            return await e.reply('تم تجاهل الاضافة')
         if chan_key in info[sid]:
             return await e.reply('عذرا بس القناة هاي ضايفها انت من قبل', buttons=back)
         try:
@@ -104,11 +108,7 @@ async def _filter(e):
                 return await e.reply("البوت مو مشرف! ارفعه مشرف بالاول وعيد المحاولة", buttons=back)
         except UserNotParticipantError:
             return await e.reply("❌ البوت غير موجود في القناة! يرجى إضافته ورفعه مشرفاً أولاً.", buttons=back)
-        if step == 'del_channle':
-            if session.get(id):
-                del session[id]
-            return await e.reply('تم تجاهل الاضافة')
-        elif step == 'add_channle':
+        if step == 'add_channle':
             owner = await get_channel_owner(chat)
             participants = await ABH.get_participants(chat, limit=0)
             current_time = datetime.now(ZoneInfo("Asia/Baghdad")).strftime("%Y-%m-%d %H:%M:%S")
