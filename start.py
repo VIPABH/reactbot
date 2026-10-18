@@ -5,6 +5,9 @@ from telethon.errors import UserNotParticipantError
 from telethon.tl.types import Channel
 from datetime import datetime
 from zoneinfo import ZoneInfo
+import re, asyncio, os, json
+from telethon import events
+from io import BytesIO
 from helpers import *
 from client import *
 info = create('data.json')
