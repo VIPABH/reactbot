@@ -99,7 +99,7 @@ async def _filter(e):
         except UserNotParticipantError:
             return await e.reply("❌ البوت غير موجود في القناة! يرجى إضافته ورفعه مشرفاً أولاً.", buttons=_back)
         if step == 'del_channle':
-            if session.get(id)
+            if session.get(id):
                 del session[id]
             return await e.reply('تم تجاهل الاضافة')
         elif step == 'add_channle':
