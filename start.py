@@ -55,7 +55,7 @@ async def start_callback(e):
         chats = await ABH.get_entity(ids)
         b = []
         text = 'قنواتك المضافة🗒️:'
-        for chat in chats:
+        for num, chat in enumerate(chats, start=1):
             b.append(Button.url(chat.title, url=f'https://t.me/{chat.username}' if chat.username else f'https://t.me/c/{str(chat.id).replace("-100", "")}/1'))
             text+=f"""
         القناة {ordinal_arabic_female(num) or num2words(num, lang='ar')} - 
