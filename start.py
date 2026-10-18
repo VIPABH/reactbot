@@ -4,10 +4,6 @@ from telethon.tl.types import ChannelParticipantAdmin
 from telethon.errors import UserNotParticipantError
 from telethon.tl.types import Channel
 from datetime import datetime
-from zoneinfo import ZoneInfo
-import re, asyncio, os, json
-from telethon import events
-from io import BytesIO
 from helpers import *
 from client import *
 info = create('data.json')
@@ -96,7 +92,7 @@ async def _filter(e):
         if not isinstance(info.get(sid), dict):
             info[sid] = {}
         if chan_key in info[sid]:
-            return await e.reply('عذرا بس القناة هاي ضايفها انت من قبل', buttons=_back)
+            return await e.reply('عذرا بس القناة هاي ضايفها انت من قبل', buttons=back)
         try:
             bot_user = await ABH.get_me()
             participant = await ABH(GetParticipantRequest(
@@ -105,9 +101,9 @@ async def _filter(e):
             ))
             is_admin = isinstance(participant.participant, ChannelParticipantAdmin)
             if not is_admin:
-                return await e.reply("البوت مو مشرف! ارفعه مشرف بالاول وعيد المحاولة", buttons=_back)
+                return await e.reply("البوت مو مشرف! ارفعه مشرف بالاول وعيد المحاولة", buttons=back)
         except UserNotParticipantError:
-            return await e.reply("❌ البوت غير موجود في القناة! يرجى إضافته ورفعه مشرفاً أولاً.", buttons=_back)
+            return await e.reply("❌ البوت غير موجود في القناة! يرجى إضافته ورفعه مشرفاً أولاً.", buttons=back)
         if step == 'del_channle':
             if session.get(id):
                 del session[id]
