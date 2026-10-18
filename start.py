@@ -39,7 +39,7 @@ async def start_callback(e):
     id = e.sender_id
     data = e.data.decode('utf-8')
     if data == 'back':
-        return await e.edit('تفضل الازرار كدامك', buttons=button(e))
+        return await e.edit('تفضل الازرار كدامك', buttons=buttons(e))
     elif data.endswith('_channle'):
         session[id]['step'] = data
         return await e.edit('ارسل الان اليوزر او الايدي او رابط القناة', buttons=back)
