@@ -72,7 +72,7 @@ async def _filter(e):
     if text == '/start':return
     if step in ('add_channle', 'del_channle'):
         target = None
-        if text.startswith('https://t.me/', '@'):
+        if text.startswith(('https://t.me/', '@')):
             target = text
         elif text.isdigit():
             target = int(text)
