@@ -90,7 +90,7 @@ async def _filter(e):
         if chan_key in info[sid]:
             return await e.reply('عذرا بس القناة هاي ضايفها انت من قبل', buttons=_back)
         try:
-            bot_user = _me[0]
+            bot_user = await ABH.get_me()
             participant = await ABH(GetParticipantRequest(
                 channel=chat,
                 participant=bot_user.id
