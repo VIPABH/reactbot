@@ -51,7 +51,7 @@ async def start_callback(e):
         return await e.edit('ارسل الان اليوزر او الايدي او رابط القناة', buttons=back)
     elif data == 'channles':
         if not info.get(str(id)):return await e.edit('ماعندك قنوات مضافة', buttons=back)
-        ids = [id for id in info[str(id)]]
+        ids = [int(id) for id in info[str(id)]]
         chats = await ABH.get_entity(ids)
         b = []
         text = 'قنواتك المضافة🗒️:'
