@@ -4,6 +4,7 @@ from telethon.tl.types import ChannelParticipantAdmin
 from telethon.errors import UserNotParticipantError
 from telethon.tl.types import Channel
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from helpers import *
 from client import *
 info = create('data.json')
