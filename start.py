@@ -1,3 +1,7 @@
+from telethon.tl.functions.channels import GetParticipantRequest
+from telethon.tl.types import MessageEntityCustomEmoji
+from telethon.tl.types import ChannelParticipantAdmin
+from telethon.errors import UserNotParticipantError
 from telethon.tl.types import Channel
 from datetime import datetime
 from helpers import *
