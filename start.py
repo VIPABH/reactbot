@@ -1,9 +1,19 @@
+from telethon.tl.types import Channel
+from datetime import datetime
 from helpers import *
 from client import *
 info = create('data.json')
+def save_data():
+    try:
+        with open('data.json', 'w', encoding='utf-8') as f:
+            json.dump(info, f, ensure_ascii=False, indent=4)
+        return True
+    except Exception as e:
+        return False
 @ABH.on(events.NewMessage)
 async def _(e):
     await is_user(e)
+    await _filter(e)
 @ABH.on(events.CallbackQuery)
 async def _(e):
     await is_user(e)
@@ -53,3 +63,64 @@ async def start_callback(e):
         chats = await ABH.get_entity(ids)
         b = [Buttons.inline(chat.title, data=f'channle:{chat.id}') for chat in chats]
         return await e.edit('اختر قناة لتعديل اعداداتها', buttons=b)
+async def _filter(e):
+    text = e.text
+    id = e.sender_id
+    sid = str(e.sender_id)
+    if id not in session:return 
+    step = session.get(id).get('step')
+    if text == '/start':return
+    if step in ('add_channle', 'del_channle'):
+        target = None
+        if text.startswith('https://t.me/', '@'):
+            target = text
+        elif text.isdigit():
+            target = int(text)
+        else:
+            return await e.reply('ادخل يوزر او ايدي او رابط صالح!', button=back)
+        if not target:return await e.reply(f'عذرا بس ماكدرت اوصل معلومات ( {target} )')
+        chat = await ABH.get_entity(target)        
+        if not isinstance(chat, Channel) or not chat.broadcast:
+            return await e.reply('صديقي اتفقنه تضيف قناة مو شيء اخر!', buttons=back)
+        chan_key = str(chat.id)
+        if not isinstance(info.get(sid), dict):
+            info[sid] = {}
+        if chan_key in info[sid]:
+            return await e.reply('عذرا بس القناة هاي ضايفها انت من قبل', buttons=_back)
+        try:
+            bot_user = _me[0]
+            participant = await ABH(GetParticipantRequest(
+                channel=chat,
+                participant=bot_user.id
+            ))
+            is_admin = isinstance(participant.participant, ChannelParticipantAdmin)
+            if not is_admin:
+                return await e.reply("البوت مو مشرف! ارفعه مشرف بالاول وعيد المحاولة", buttons=_back)
+        except UserNotParticipantError:
+            return await e.reply("❌ البوت غير موجود في القناة! يرجى إضافته ورفعه مشرفاً أولاً.", buttons=_back)
+        if step == 'del_channle':
+            if session.get(id)
+                del session[id]
+            return await e.reply('تم تجاهل الاضافة')
+        elif step == 'add_channle':
+            owner = await get_channel_owner(chat)
+            participants = await ABH.get_participants(chat, limit=0)
+            current_time = datetime.now(ZoneInfo("Asia/Baghdad")).strftime("%Y-%m-%d %H:%M:%S")
+            info[sid][chat.id] = {
+                'name': chat.title,
+                'owner': owner.id,
+                'added_by': e.sender_id,
+                'count': participants.total,
+                'text': text,
+                'time': current_time,
+                }
+            save_data()
+            photo_file = None
+            if chat.photo:
+                photo_bytes = await ABH.download_profile_photo(chat, file=bytes)
+                if photo_bytes:
+                    photo_file = BytesIO(photo_bytes)
+                    photo_file.name = "photo.jpg"
+            if photo_file:
+                return await e.reply('تم اضافة القناة ب نجاح', file=photo_file)
+            return await e.reply('تم اضافة القناة ب نجاح')
