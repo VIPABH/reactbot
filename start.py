@@ -23,7 +23,8 @@ async def _(e):
     await is_user(e)
 back = [Button.inline('الرجوع', data='back', style=blue, icon=5352759161945867747)]
 def buttons(e):
-    if str(e.sender_id) not in info:
+    id = str(e.sender_id)
+    if id not in info and info[id].values():
         b = [Button.inline('اضف قناة', data='add_channle', style=green, icon=5222040745665379997)]
     else:
         b = [
@@ -50,7 +51,7 @@ async def start_callback(e):
         if not info.get(str(id)):return await e.edit('ماعندك قنوات مضافة', buttons=back)
         ids = [int(id) for id in info[str(id)]]
         chats = await ABH.get_entity(ids)
-        b = [Button.inline(chat.title, data=f'del:{chat.id}', style=red, icon=5258130763148172425) for chat in chats]
+        b = [Button.inline(chat.title, data=f'delete:{chat.id}', style=red, icon=5258130763148172425) for chat in chats]
         button = chunk_list(b)
         button.append(back)
         return await e.edit('اختر قناة لحذفها', buttons=button)
@@ -78,12 +79,12 @@ async def start_callback(e):
     elif data == 'add_channle':
         session[id] = data
         await e.edit('ارسل الان الايدي او اليوزر', buttons=back)
-@ABH.on(events.CallbackQuery(pattern=b'^del'))
+@ABH.on(events.CallbackQuery(pattern=b'^delete'))
 async def _(e):
     data = e.data.decode('utf-8')
     arg, chat = data.split(':')
     id = str(e.sender_id)
-    if arg == 'del':
+    if arg == 'delete':
         if not id in info:return await e.edit('عذرا بس انت ماعندك قنوات حاليا', buttons=back)
         if not chat in info[id]:return await e.edit('عذرا بس القناة هاي مو مضافة', buttons=back)
         del info[id][chat]
