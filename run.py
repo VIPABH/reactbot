@@ -66,7 +66,13 @@ async def start_everything():
     print('bot is running')
     await ABH.run_until_disconnected()
 def run_bot():
-    loop = asyncio.get_event_loop()
+    try:
+        loop = asyncio.get_event_loop()
+        if loop.is_closed():
+            raise RuntimeError("Loop is closed")
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)    
     if loop.is_running():
         loop.create_task(start_everything())
     else:
@@ -76,5 +82,10 @@ def run_bot():
             print("\nتم إيقاف البوت يدوياً.")
         except Exception:
             print(traceback.format_exc())
+        finally:
+            try:
+                loop.close()
+            except:
+                pass
 if __name__ == "__main__":
     run_bot()
