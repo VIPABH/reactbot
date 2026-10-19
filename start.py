@@ -95,9 +95,9 @@ async def _(e):
         return await e.edit('تم حذف القناة ب نجاح', buttons=back)
     elif arg == 'channle':
         b = [
-            Button.inline('عدد التفاعلات', data=f'reactcount:{chat}', style=blue, icon=5226513232549664618),
-            Button.inline('تحديد التفاعلات', data=f'setreact:{chat}', style=blue, icon=5226513232549664618),
-            Button.inline('عدد المشاهدات', data=f'viewcount:{chat}', style=blue, icon=5226513232549664618),
+            Button.inline('عدد التفاعلات', data=f'reactcount:{chat}', style=green, icon=5226513232549664618),
+            Button.inline('تحديد التفاعلات', data=f'setreact:{chat}', style=green, icon=5226513232549664618),
+            Button.inline('عدد المشاهدات', data=f'viewcount:{chat}', style=green, icon=5226513232549664618),
         ]
         button = chunk_list(b)
         button.append(back)
@@ -192,4 +192,5 @@ async def _filter(e):
         caption = f'تم اضافة ( {', '.join(valid_emojis)} ) '
         if uninvailde:
             caption+=f'\nتم تخطي ( {', '.join(uninvailde)} )'
+        del session[id]
         return await e.reply(caption, buttons=back)
