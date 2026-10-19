@@ -103,10 +103,10 @@ async def _(e):
         button.append(back)
         await e.edit('اختر ما تريد تعديله', buttons=button)
     elif arg.endswith('count'):
-        session[e.sender_id] = data
+        session[e.sender_id] = arg
         return await e.edit('ارسل الان العدد', buttons=back)
-    elif data == 'setreact':
-        session[e.sender_id] = data
+    elif arg == 'setreact':
+        session[e.sender_id] = arg
         return await e.edit('ارسل الان الايموجيات المراد وضعها', buttons=back)
 emoji = [
     "🤣", "❤️", "👍", "👎", "🔥", "🥰", "👏", "😁", "🤔", "🤯", "😱", "🤬", "😡", "😢", "🎉", "🤩", "🤮", "💩", "🙏", "👌", "🕊",
