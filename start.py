@@ -24,7 +24,7 @@ async def _(e):
 back = [Button.inline('الرجوع', data='back', style=blue, icon=5352759161945867747)]
 def buttons(e):
     id = str(e.sender_id)
-    if id not in info and not info[id].values():
+    if id not in info or not info[id].values():
         b = [Button.inline('اضف قناة', data='add_channle', style=green, icon=5222040745665379997)]
     else:
         b = [
