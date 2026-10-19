@@ -50,7 +50,7 @@ async def start_callback(e):
         if not info.get(str(id)):return await e.edit('ماعندك قنوات مضافة', buttons=back)
         ids = [int(id) for id in info[str(id)]]
         chats = await ABH.get_entity(ids)
-        b = [Buttons.inline(chat.title, data=f'del:{chat.id}', style=red, icon=5258130763148172425) for chat in chats]
+        b = [Button.inline(chat.title, data=f'del:{chat.id}', style=red, icon=5258130763148172425) for chat in chats]
         return await e.edit('اختر قناة لحذفها', buttons=back)
     elif data == 'channles':
         if not info.get(str(id)):return await e.edit('ماعندك قنوات مضافة', buttons=back)
@@ -69,7 +69,7 @@ async def start_callback(e):
         if not info.get(str(id)):return await e.edit('ماعندك قنوات مضافة', buttons=back)
         ids = [int(id) for id in info[str(id)]]
         chats = await ABH.get_entity(ids)
-        b = [Buttons.inline(chat.title, data=f'channle:{chat.id}', style=green, icon=5258096772776991776) for chat in chats]
+        b = [Button.inline(chat.title, data=f'channle:{chat.id}', style=green, icon=5258096772776991776) for chat in chats]
         return await e.edit('اختر قناة لتعديل اعداداتها', buttons=b)
     elif data == 'add_channle':
         session[id] = data
