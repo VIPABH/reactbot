@@ -78,6 +78,17 @@ async def start_callback(e):
     elif data == 'add_channle':
         session[id] = data
         await e.edit('ارسل الان الايدي او اليوزر', buttons=back)
+@ABH.on(events.CallbackQuery(pattern=b'^(del:)$'))
+async def _(e):
+    data = e.data.decode('utf-8')
+    arg, chat = data.split(':')
+    id = str(e.sender_id)
+    if arg == 'del':
+        if not id in info:return await e.edit('عذرا بس انت ماعندك قنوات حاليا', buttons=back)
+        if not chat in info[id]:return await e.edit('عذرا بس القناة هاي مو مضافة', buttons=back)
+        del info[id][chat]
+        save_data()
+        return await e.edit('تم حذف القناة ب نجاح', buttons=back)
 async def _filter(e):
     text = e.text
     id = e.sender_id
