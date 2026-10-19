@@ -46,9 +46,12 @@ async def start_callback(e):
     data = e.data.decode('utf-8')
     if data == 'back':
         return await e.edit('تفضل الازرار كدامك', buttons=buttons(e))
-    elif data.endswith('_channle'):
-        session[id]['step'] = data
-        return await e.edit('ارسل الان اليوزر او الايدي او رابط القناة', buttons=back)
+    elif data == 'del_channle':
+        if not info.get(str(id)):return await e.edit('ماعندك قنوات مضافة', buttons=back)
+        ids = [id for id in info[str(id)]]
+        chats = await ABH.get_entity(ids)
+        b = [Buttons.inline(chat.title, data=f'del:{chat.id}', style=red, icon=5258130763148172425) for chat in chats]
+        return await e.edit('اختر قناة لحذفها', buttons=back)
     elif data == 'channles':
         if not info.get(str(id)):return await e.edit('ماعندك قنوات مضافة', buttons=back)
         ids = [int(id) for id in info[str(id)]]
@@ -66,8 +69,11 @@ async def start_callback(e):
         if not info.get(str(id)):return await e.edit('ماعندك قنوات مضافة', buttons=back)
         ids = [id for id in info[str(id)]]
         chats = await ABH.get_entity(ids)
-        b = [Buttons.inline(chat.title, data=f'channle:{chat.id}') for chat in chats]
+        b = [Buttons.inline(chat.title, data=f'channle:{chat.id}', style=green, icon=5258096772776991776) for chat in chats]
         return await e.edit('اختر قناة لتعديل اعداداتها', buttons=b)
+    elif data == 'add_channle':
+        session[id] = data
+        await e.edit('ارسل الان الايدي او اليوزر', buttons=back)
 async def _filter(e):
     text = e.text
     id = e.sender_id
@@ -75,7 +81,7 @@ async def _filter(e):
     if id not in session:return 
     step = session.get(id).get('step')
     if text == '/start':return
-    if step in ('add_channle', 'del_channle'):
+    if step == 'add_channle':
         target = None
         if text.startswith(('https://t.me/', '@')):
             target = text
@@ -107,25 +113,24 @@ async def _filter(e):
                 return await e.reply("البوت مو مشرف! ارفعه مشرف بالاول وعيد المحاولة", buttons=back)
         except UserNotParticipantError:
             return await e.reply("❌ البوت غير موجود في القناة! يرجى إضافته ورفعه مشرفاً أولاً.", buttons=back)
-        if step == 'add_channle':
-            owner = await get_channel_owner(chat)
-            participants = await ABH.get_participants(chat, limit=0)
-            current_time = datetime.now(ZoneInfo("Asia/Baghdad")).strftime("%Y-%m-%d %H:%M:%S")
-            info[sid][chat.id] = {
-                'name': chat.title,
-                'owner': owner.id,
-                'added_by': e.sender_id,
-                'count': participants.total,
-                'text': text,
-                'time': current_time,
-                }
-            save_data()
-            photo_file = None
-            if chat.photo:
-                photo_bytes = await ABH.download_profile_photo(chat, file=bytes)
-                if photo_bytes:
-                    photo_file = BytesIO(photo_bytes)
-                    photo_file.name = "photo.jpg"
-            if photo_file:
-                return await e.reply('تم اضافة القناة ب نجاح', file=photo_file)
-            return await e.reply('تم اضافة القناة ب نجاح')
+        owner = await get_channel_owner(chat)
+        participants = await ABH.get_participants(chat, limit=0)
+        current_time = datetime.now(ZoneInfo("Asia/Baghdad")).strftime("%Y-%m-%d %H:%M:%S")
+        info[sid][chat.id] = {
+            'name': chat.title,
+            'owner': owner.id,
+            'added_by': e.sender_id,
+            'count': participants.total,
+            'text': text,
+            'time': current_time,
+            }
+        save_data()
+        photo_file = None
+        if chat.photo:
+            photo_bytes = await ABH.download_profile_photo(chat, file=bytes)
+            if photo_bytes:
+                photo_file = BytesIO(photo_bytes)
+                photo_file.name = "photo.jpg"
+        if photo_file:
+            return await e.reply('تم اضافة القناة ب نجاح', file=photo_file)
+        return await e.reply('تم اضافة القناة ب نجاح')
