@@ -1,15 +1,20 @@
-import asyncio, uvloop, traceback, logging
+import asyncio
+import uvloop
+import traceback
+import logging
+import datetime
 from client import *
 from start import *
+asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 class TelegramLogsHandler(logging.Handler):
     def emit(self, record):
         if record.levelno >= logging.ERROR:
             err_entry = self.format(record)
             try:
-                loop = asyncio.get_event_loop()
+                loop = asyncio.get_running_loop()
                 if loop.is_running():
                     loop.create_task(send_error(err_entry, source="سجل النظام (Logging)"))
-            except:
+            except RuntimeError:
                 pass
 logging.basicConfig(
     level=logging.WARNING,
@@ -32,25 +37,18 @@ async def send_error(error_text, source="غير معروف"):
             f"__________________________\n\n"
             f"🔍 **المصدر:** `{source}`\n"
             f"__________________________\n\n"
-            f"⏰ **الوقت:** `{datetime.datetime.now(baghdad_tz).strftime('%H:%M:%S')}`\n"
+            f"⏰ **الوقت:** `{datetime.datetime.now().strftime('%H:%M:%S')}`\n"
             f"__________________________\n\n"
             f"💻 **التفاصيل:**\n"
             f"```python\n{clean_error}\n```\n"
             f"__________________________"
-        )            
+        )         
         await ABH.send_message(wfffp, report)
     except Exception as e:
         try:
             await ABH.send_message(wfffp, f"خطأ خام من {source}:\n\n{error_text[:3800]}")
         except:
             print(f"❌ فشل الإرسال النهائي تماماً: {e}")
-async def shutdown(loop):
-    tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
-    for task in tasks:
-        task.cancel()
-    await asyncio.gather(*tasks, return_exceptions=True)
-    loop.stop()
-asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 def handle_async_exception(loop, context):
     exception = context.get("exception")
     if exception:
@@ -65,16 +63,18 @@ async def start_everything():
     loop = asyncio.get_running_loop()
     loop.set_exception_handler(handle_async_exception)
     await ABH.start(bot_token=bot_token)
-    await ABH.run_until_disconnected()
     print('bot is running')
+    await ABH.run_until_disconnected()
+def run_bot():
+    loop = asyncio.get_event_loop()
+    if loop.is_running():
+        loop.create_task(start_everything())
+    else:
+        try:
+            loop.run_until_complete(start_everything())
+        except KeyboardInterrupt:
+            print("\nتم إيقاف البوت يدوياً.")
+        except Exception:
+            print(traceback.format_exc())
 if __name__ == "__main__":
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    try:
-        loop.run_until_complete(start_everything())
-    except KeyboardInterrupt:
-        print("\nتم إيقاف البوت يدوياً.")
-    except Exception:
-        print(traceback.format_exc())
-    finally:
-        loop.close()
+    run_bot()
