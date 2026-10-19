@@ -143,6 +143,7 @@ async def _filter(e):
             'time': current_time,
             }
         save_data()
+        caption = f'**تم اضافة القناة بنجاح🌚**\nاسم القناة: ( {chat.title} )\nايدي القناة: ( `{chat.id}` )\n مالك القناة: ( {await ment(owner)} )\n ايديه: ( `{owner.id}` )\n عدد مشتركين القناة: ( `{participants.total}` )'
         photo_file = None
         if chat.photo:
             photo_bytes = await ABH.download_profile_photo(chat, file=bytes)
@@ -150,5 +151,5 @@ async def _filter(e):
                 photo_file = BytesIO(photo_bytes)
                 photo_file.name = "photo.jpg"
         if photo_file:
-            return await e.reply('تم اضافة القناة ب نجاح', file=photo_file)
-        return await e.reply('تم اضافة القناة ب نجاح')
+            return await e.reply(caption, file=photo_file)
+        return await e.reply(caption)
