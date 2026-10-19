@@ -95,7 +95,7 @@ async def _filter(e):
     id = e.sender_id
     sid = str(e.sender_id)
     if id not in session:return 
-    step = session.get(id).get('step')
+    step = session.get(id, {}).get('step', None)
     if text == '/start':return
     if step == 'add_channle':
         target = None
