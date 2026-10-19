@@ -94,9 +94,9 @@ async def _filter(e):
     text = e.text
     id = e.sender_id
     sid = str(e.sender_id)
-    if id not in session:return 
-    step = session.get(id, {}).get('step', None)
     if text == '/start':return
+    if id not in session:return 
+    step = session.get(id)
     if step == 'add_channle':
         target = None
         if text.startswith(('https://t.me/', '@')):
