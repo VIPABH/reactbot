@@ -77,3 +77,4 @@ if __name__ == "__main__":
         print(traceback.format_exc())
     finally:
         loop.close()
+print('bot is running')
