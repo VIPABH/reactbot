@@ -78,7 +78,7 @@ async def start_callback(e):
     elif data == 'add_channle':
         session[id] = data
         await e.edit('ارسل الان الايدي او اليوزر', buttons=back)
-@ABH.on(events.CallbackQuery(pattern=b'^(del:)$'))
+@ABH.on(events.CallbackQuery(pattern=b'^del'))
 async def _(e):
     data = e.data.decode('utf-8')
     arg, chat = data.split(':')
