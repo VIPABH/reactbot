@@ -82,17 +82,38 @@ async def start_callback(e):
     elif data == 'add_channle':
         session[id] = data
         await e.edit('ارسل الان الايدي او اليوزر', buttons=back)
-@ABH.on(events.CallbackQuery(pattern=b'^delete'))
+@ABH.on(events.CallbackQuery(pattern=b'^(delete|channle|reactcount|setreact|viewcount)'))
 async def _(e):
     data = e.data.decode('utf-8')
     arg, chat = data.split(':')
     id = str(e.sender_id)
+    if not id in info:return await e.edit('عذرا بس انت ماعندك قنوات حاليا', buttons=back)
+    if not chat in info[id]:return await e.edit('عذرا بس القناة هاي مو مضافة', buttons=back)
     if arg == 'delete':
-        if not id in info:return await e.edit('عذرا بس انت ماعندك قنوات حاليا', buttons=back)
-        if not chat in info[id]:return await e.edit('عذرا بس القناة هاي مو مضافة', buttons=back)
         del info[id][chat]
         save_data()
         return await e.edit('تم حذف القناة ب نجاح', buttons=back)
+    elif arg == 'channle':
+        b = [
+            Button.inline('عدد التفاعلات', data=f'reactcount:{chat}', style=blue, icon=5226513232549664618),
+            Button.inline('تحديد التفاعلات', data=f'setreact:{chat}', style=blue, icon=5226513232549664618),
+            Button.inline('عدد المشاهدات', data=f'viewcount:{chat}', style=blue, icon=5226513232549664618),
+        ]
+        button = chunk_list(b)
+        button.append(back)
+        await e.edit('اختر ما تريد تعديله', buttons=button)
+    elif arg.endswith('count'):
+        session[e.sender_id] = data
+        return await e.edit('ارسل الان العدد', buttons=back)
+    elif data == 'setreact':
+        session[e.sender_id] = data
+        return await e.edit('ارسل الان الايموجيات المراد وضعها', buttons=back)
+emoji = [
+    "🤣", "❤️", "👍", "👎", "🔥", "🥰", "👏", "😁", "🤔", "🤯", "😱", "🤬", "😡", "😢", "🎉", "🤩", "🤮", "💩", "🙏", "👌", "🕊",
+    "🤡", "🥱", "☺️", "😍", "🐳", "❤️‍🔥", "🌚", "🌭", "😙", "💯", "⚡️", "🍌", "🏆", "😡", "😘", "🙊", "😎", "👾", "🤷‍♂️",
+    "🤷‍♀️", "🤷", "☃️", "🗿", "🆒", "💘", "🙈", "😇", "😨", "🤝", "✍️", "🤗", "🫡", "🎅", "🎄", "😴", "😭", "🤓", "👻",
+    "👨‍💻", "👀", "🎃", "🙈", "💔", "🤨", "😐", "🍓", "🍾", "💋", "🖕", "😈"
+]
 async def _filter(e):
     text = e.text
     id = e.sender_id
@@ -149,6 +170,7 @@ async def _filter(e):
         caption+=f'( [{chat.title}]({url}) )'
         b = [Button.url(chat.title, url=url, style=blue, icon=5465374681915727405)]
         b.append(back)
+        del session[id]
         photo_file = None
         if chat.photo:
             photo_bytes = await ABH.download_profile_photo(chat, file=bytes)
@@ -158,3 +180,16 @@ async def _filter(e):
         if photo_file:
             return await e.reply(caption, file=photo_file, buttons=b)
         return await e.reply(caption, buttons=b)
+    if step == 'setreact':
+        if not text:return await e.reply('يرجى ارسال نص صالح', buttons=back)
+        uninvailde = []
+        valid_emojis = []
+        for char in text:
+            if char in emoji:
+                valid_emojis.append(char)
+            else:
+                uninvailde.append(char)
+        caption = f'تم اضافة ( {', '.join(valid_emojis)} ) '
+        if uninvailde:
+            caption+=f'\nتم تخطي ( {', '.join(uninvailde)} )'
+        return await e.reply(caption, buttons=back)
