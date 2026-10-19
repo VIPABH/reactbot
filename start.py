@@ -67,7 +67,7 @@ async def start_callback(e):
             b.append(Button.url(chat.title, url=f'https://t.me/{chat.username}' if chat.username else f'https://t.me/c/{str(chat.id).replace("-100", "")}/1', style=blue, icon=5465374681915727405))
             url=f'https://t.me/{chat.username}' if chat.username else f'https://t.me/c/{str(chat.id).replace("-100", "")}/1'
             text += f"""
-            - القناة {ordinal_arabic_female(num) if 'ordinal_arabic_female' in globals() else num} - [{chat.title}]({url}) - الآيدي: `{chat.id}`"""
+            - القناة {ordinal_arabic_female(num) if ordinal_arabic_female(num) else num} - ( [{chat.title}]({url}) ) - ( `{chat.id}` )"""
         button = chunk_list(b)
         button.append(back)
         return await e.edit(text, buttons=button)
