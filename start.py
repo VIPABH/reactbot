@@ -56,12 +56,11 @@ async def start_callback(e):
         b = []
         text = 'قنواتك المضافة🗒️:'
         for num, chat in enumerate(chats, start=1):
-            b.append(Button.url(chat.title, url=f'https://t.me/{chat.username}' if chat.username else f'https://t.me/c/{str(chat.id).replace("-100", "")}/1'))
+            b.append(Button.url(chat.title, url=f'https://t.me/{chat.username}' if chat.username else f'https://t.me/c/{str(chat.id).replace("-100", "")}/1', style=blue, icon=5465374681915727405))
             text+=f"""
-        القناة {ordinal_arabic_female(num) or num2words(num, lang='ar')} - 
-        {f'( [{chat.title}](https://t.me/{chat.username}) )' if chat and chat.username else chat.title} 
-        - (`{chat.id}`)"""
+        القناة {ordinal_arabic_female(num) or num2words(num, lang='ar')} - {f'( [{chat.title}](https://t.me/{chat.username}) )' if chat and chat.username else chat.title} - (`{chat.id}`)"""
         button = chunk_list(b)
+        button.append(back)
         return await e.edit(text, buttons=button)
     elif data == "settings":
         if not info.get(str(id)):return await e.edit('ماعندك قنوات مضافة', buttons=back)
