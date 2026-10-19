@@ -65,8 +65,9 @@ async def start_callback(e):
         text = 'قنواتك المضافة🗒️:'
         for num, chat in enumerate(chats, start=1):
             b.append(Button.url(chat.title, url=f'https://t.me/{chat.username}' if chat.username else f'https://t.me/c/{str(chat.id).replace("-100", "")}/1', style=blue, icon=5465374681915727405))
+            url=f'https://t.me/{chat.username}' if chat.username else f'https://t.me/c/{str(chat.id).replace("-100", "")}/1'
             text+=f"""
-        القناة {ordinal_arabic_female(num) or num2words(num, lang='ar')} - {f'( [{chat.title}](https://t.me/{chat.username}) )' if chat and chat.username else chat.title} - (`{chat.id}`)"""
+        القناة {ordinal_arabic_female(num) or num2words(num, lang='ar')} - { [{chat.title}]({url}) } - (`{chat.id}`)"""
         button = chunk_list(b)
         button.append(back)
         return await e.edit(text, buttons=button)
@@ -144,6 +145,10 @@ async def _filter(e):
             }
         save_data()
         caption = f'**تم اضافة القناة بنجاح🌚**\nاسم القناة: ( {chat.title} )\nايدي القناة: ( `{chat.id}` )\n مالك القناة: ( {await ment(owner)} )\n ايديه: ( `{owner.id}` )\n عدد مشتركين القناة: ( `{participants.total}` )'
+        url=f'https://t.me/{chat.username}' if chat.username else f'https://t.me/c/{str(chat.id).replace("-100", "")}/1'
+        caption+=f'( [{chat.title}]({url}) )'
+        b = [Button.url(chat.title, url=url, style=blue, icon=5465374681915727405)]
+        b.append(back)
         photo_file = None
         if chat.photo:
             photo_bytes = await ABH.download_profile_photo(chat, file=bytes)
@@ -151,5 +156,5 @@ async def _filter(e):
                 photo_file = BytesIO(photo_bytes)
                 photo_file.name = "photo.jpg"
         if photo_file:
-            return await e.reply(caption, file=photo_file)
-        return await e.reply(caption)
+            return await e.reply(caption, file=photo_file, buttons=b)
+        return await e.reply(caption, buttons=b)
