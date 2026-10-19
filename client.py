@@ -2,7 +2,7 @@ from telethon import events, TelegramClient, connection
 import asyncio, os, redis
 api_id = int(os.getenv("API_ID"))
 api_hash = os.getenv("API_HASH")
-bot_token = os.getenv("bot_token")
+bot_token = os.getenv("BOT_TOKEN")
 wfffp = 1910015590
 ABH = TelegramClient(
     "REACTBOT",
