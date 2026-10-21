@@ -184,7 +184,7 @@ async def _filter(e):
         if not text:return await e.reply('يرجى ارسال نص صالح', buttons=back)
         uninvailde = []
         valid_emojis = []
-        for char in text:
+        for char in text.split():
             if char in emoji:
                 valid_emojis.append(char)
             else:
