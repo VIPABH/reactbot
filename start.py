@@ -182,13 +182,14 @@ async def _filter(e):
         return await e.reply(caption, buttons=b)
     if step == 'setreact':
         if not text:return await e.reply('يرجى ارسال نص صالح', buttons=back)
-        uninvailde = []
-        valid_emojis = []
-        for char in text.split():
-            if char in emoji:
-                valid_emojis.append(char)
-            else:
-                uninvailde.append(char)
+        uninvailde = set()
+        valid_emojis = set()
+        for t in text.split():
+            for char in t:
+                if char in emoji:
+                    valid_emojis.append(char)
+                else:
+                    uninvailde.append(char)
         caption = f'تم اضافة ( {', '.join(valid_emojis)} ) '
         if uninvailde:
             caption+=f'\nتم تخطي ( {', '.join(uninvailde)} )'
