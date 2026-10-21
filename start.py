@@ -32,7 +32,7 @@ def buttons(e):
         b = [
             Button.inline('اضف قناة', data='add_channle', style=blue, icon=5222040745665379997),
             Button.inline('حذف قناة', data='del_channle', style=red, icon=5408832111773757273),
-            Button.inline('القنوات المضافة', data='Channles', style=blue, icon=6323116093724428158),
+            Button.inline('القنوات المضافة', data='list_channles', style=blue, icon=6323116093724428158),
             Button.inline('الاعدادات', data='settings', style=green, icon=5258096772776991776),
             ]
     return chunk_list(b)
@@ -41,7 +41,7 @@ session = {}
 async def start(e):
     await send(e, f'اهلا عزيزي ( {await ment(e)} ) اني بوت مال رياكشن وظيفتي اضيفلك رياكشنات ومشاهدات لقناتك', buttons=buttons(e))
     session[e.sender_id] = {}
-@ABH.on(events.CallbackQuery(pattern=b'^(add_channle|del_channle|Channles|settings|back)$'))
+@ABH.on(events.CallbackQuery(pattern=b'^(add_channle|del_channle|list_channles|settings|back)$'))
 async def start_callback(e):
     id = e.sender_id
     if not session.get(id):
@@ -57,7 +57,7 @@ async def start_callback(e):
         button = chunk_list(b)
         button.append(back)
         return await e.edit('اختر قناة لحذفها', buttons=button)
-    elif data == 'Channles':
+    elif data == 'list_channles':
         if not info.get(str(id)):return await e.edit('ماعندك قنوات مضافة', buttons=back)
         ids = [int(id) for id in info[str(id)]]
         chats = await ABH.get_entity(ids)
