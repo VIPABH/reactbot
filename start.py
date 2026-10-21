@@ -187,9 +187,9 @@ async def _filter(e):
         for t in text.split():
             for char in t:
                 if char in emoji:
-                    valid_emojis.append(char)
+                    valid_emojis.add(char)
                 else:
-                    uninvailde.append(char)
+                    uninvailde.add(char)
         caption = f'تم اضافة ( {', '.join(valid_emojis)} ) '
         if uninvailde:
             caption+=f'\nتم تخطي ( {', '.join(uninvailde)} )'
