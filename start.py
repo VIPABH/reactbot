@@ -107,8 +107,10 @@ async def _(e):
         await e.edit('اختر ما تريد تحديده', buttons=button)
     elif arg in ('view_count', 'react_count'):
         session[e.sender_id] = {"step": arg, 'chat': chat}
-        count = f'\nالعدد الحالي ( {info.get(str(e.sender_id), {}).get(arg)} )' if info.get(str(e.sender_id), {}).get(arg) is not None else '...'
-        return await e.edit(f'ارسل الان العدد{count}', buttons=back)
+        caption = 'ارسل الان العدد'
+        if info.get(id):
+            caption+=f'\nالعدد الحالي ( {info[id][arg]} )'
+        return await e.edit(caption, buttons=back)
     elif arg == 'setreact':
         session[e.sender_id] = {"step": arg, 'chat': chat}
         return await e.edit('ارسل الان الايموجيات المراد وضعها', buttons=back)
@@ -143,7 +145,7 @@ async def _filter(e):
         if step == 'del_channle':
             if session.get(id):
                 del session[id]
-            return await e.reply('تم تجاهل الاضافة')
+            return await e.reply('تم تجاهل الاضافة', buttons=back)
         if chan_key in info[sid]:
             return await e.reply('عذرا بس القناة هاي ضايفها انت من قبل', buttons=back)
         try:
@@ -203,12 +205,12 @@ async def _filter(e):
         return await e.reply(caption, buttons=back)
     elif step in ('react_count', 'view_count'):
         if not text.isdigit():
-            return await e.reply('ارسل رقم صالح!')
+            return await e.reply('ارسل رقم صالح!', buttons=back)
         num = int(text)
-        if num < 1 or num > 15:return await e.reply('عذرا صديقي بس العدد لازم يكون بين (1-15 )')
+        if num < 1 or num > 15:return await e.reply('عذرا صديقي بس العدد لازم يكون بين (1-15 )', buttons=back)
         info[sid][chat_id][step] = num
         save_data()
         if id in session:
             del session[id]
         label = "التفاعلات" if step == 'react_count' else "المشاهدات"
-        return await e.reply(f'تم تحديد عدد {label} المطلوبة ( `{text}` )')
+        return await e.reply(f'تم تحديد عدد {label} المطلوبة ( `{text}` )', buttons=back)
