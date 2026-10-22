@@ -169,7 +169,7 @@ async def _filter(e):
         url=f'https://t.me/{chat.username}' if chat.username else f'https://t.me/c/{str(chat.id).replace("-100", "")}/1'
         caption+=f'( [{chat.title}]({url}) )'
         b = [Button.url(chat.title, url=url, style=blue, icon=5465374681915727405)]
-        b.append(back)
+        button = [b, back]
         del session[id]
         photo_file = None
         if chat.photo:
@@ -178,8 +178,8 @@ async def _filter(e):
                 photo_file = BytesIO(photo_bytes)
                 photo_file.name = "photo.jpg"
         if photo_file:
-            return await e.reply(caption, file=photo_file, buttons=b)
-        return await e.reply(caption, buttons=b)
+            return await e.reply(caption, file=photo_file, buttons=button)
+        return await e.reply(caption, buttons=button)
     elif step == 'setreact':
         if not text:return await e.reply('يرجى ارسال نص صالح', buttons=back)
         uninvailde = set()
