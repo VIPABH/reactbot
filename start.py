@@ -113,7 +113,8 @@ async def _(e):
     elif arg == 'setreact':
         session[e.sender_id] = {"step": arg, 'chat': chat}
         caption = 'ارسل الان الايموجيات المراد وضعها\n'
-        caption+=f'الرياكت الحالي ( {", ".join(info[id][chat][arg])} )' if join(info[id][chat][arg]) else '...'
+        if arg in info[id][chat]:
+            caption+=f'الرياكت الحالي ( {', '.join(info[id][chat][arg])} )'
         return await e.edit(caption, buttons=back)
 emoji = [
     "🤣", "❤️", "👍", "👎", "🔥", "🥰", "👏", "😁", "🤔", "🤯", "😱", "🤬", "😡", "😢", "🎉", "🤩", "🤮", "💩", "🙏", "👌", "🕊",
