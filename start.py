@@ -200,7 +200,8 @@ async def _filter(e):
         caption = f'تم اضافة ( {', '.join(valid_emojis)} )'
         if uninvailde:
             caption+=f'\nتم تخطي ( {', '.join(uninvailde)} )'
-        info[sid][chat_id]['react'] = valid_emojis
+        info[sid][chat_id].setdefault('react', set())
+        info[sid][chat_id]['react'].add(valid_emojis)
         save_data()
         del session[id]
         return await e.reply(caption, buttons=back)
