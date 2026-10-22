@@ -103,10 +103,10 @@ async def _(e):
         button.append(back)
         await e.edit('اختر ما تريد تعديله', buttons=button)
     elif arg in ('viewcount', 'reactcount'):
-        session[e.sender_id] = {"data": arg, 'chat': None}
+        session[e.sender_id] = {"step": arg, 'chat': None}
         return await e.edit('ارسل الان العدد', buttons=back)
     elif arg == 'setreact':
-        session[e.sender_id] = {"data": arg, 'chat': None}
+        session[e.sender_id] = {"step": arg, 'chat': None}
         return await e.edit('ارسل الان الايموجيات المراد وضعها', buttons=back)
 emoji = [
     "🤣", "❤️", "👍", "👎", "🔥", "🥰", "👏", "😁", "🤔", "🤯", "😱", "🤬", "😡", "😢", "🎉", "🤩", "🤮", "💩", "🙏", "👌", "🕊",
@@ -119,12 +119,6 @@ async def _filter(e):
     id = e.sender_id
     sid = str(e.sender_id)
     if text == '/start':return
-    if text == 'اطبع':
-        print(session.get(id, 0))
-    print_all()
-    print('-'*10, not id in session, not 'step' in session[id])
-    if not id in session:return
-    if not 'step' in session[id]:return
     step = session[id]['step']
     chat_id = session.get(id).get('chat')
     if step == 'add_channle':
