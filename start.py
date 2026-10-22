@@ -124,6 +124,7 @@ async def _filter(e):
     if id not in session:return
     if not 'step' in session[id]:return
     step = session[id]['step']
+    print(step in ('reactcount', 'viewcount'))
     chat_id = session.get(id).get('chat')
     if step == 'add_channle':
         target = None
