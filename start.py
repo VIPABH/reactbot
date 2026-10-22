@@ -189,22 +189,22 @@ async def _filter(e):
         return await e.reply(caption, buttons=button)
     elif step == 'setreact':
         if not text:return await e.reply('يرجى ارسال نص صالح', buttons=back)
-        valid_emojis = []
-        uninvailde = []
+        valid_emojis = set()
+        uninvailde = set()
         for t in text.split():
             for char in t:
                 if char in emoji:
-                    valid_emojis.append(char)
+                    valid_emojis.add(char)
                 else:
-                    uninvailde.append(t)
+                    uninvailde.add(t)
         caption = f'**النص المدخل** ( `{text}` )\n'
         if valid_emojis:
             caption+= f'تم اضافة ( {', '.join(valid_emojis)} )\n'
         if uninvailde:
             caption+=f'تم تخطي ( {', '.join(uninvailde)} )\n'
         if not valid_emojis:return await e.reply('لم يتم ارسال ايموجي صالح', buttons=back)
-        info[sid][chat_id].setdefault('react', [])
-        info[sid][chat_id]['react'].append(valid_emojis)
+        info[sid][chat_id].setdefault('react', set())
+        info[sid][chat_id]['react'].add(valid_emojis)
         save_data()
         del session[id]
         return await e.reply(caption, buttons=back)
