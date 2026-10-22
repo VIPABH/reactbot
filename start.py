@@ -198,9 +198,11 @@ async def _filter(e):
         del session[id]
         return await e.reply(caption, buttons=back)
     elif step in ('reactcount', 'viewcount'):
-        if not e.text.isdigit():
-            return await e.reply('ارسل رقم صالح!')
-        info[sid][chat_id]['react_count'if step == 'reactcount' else 'view_count'] = int(text)
+        if not text.isdigit():
+            return await e.reply('ارسل رقم صالح!')    
+        info[sid][chat_id]['react_count' if step == 'reactcount' else 'view_count'] = int(text)
         save_data()
-        del session[id]
-        return await e.reply(f'تم تحديد عدد {"التفاعلات" if step == reactcount else 'المشاهدات'} المطلوبة ( `{text}` )')
+        if id in session:
+            del session[id]    
+        label = "التفاعلات" if step == 'reactcount' else "المشاهدات"
+        return await e.reply(f'تم تحديد عدد {label} المطلوبة ( `{text}` )')
