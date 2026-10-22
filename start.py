@@ -112,13 +112,14 @@ async def _(e):
         return await e.edit(caption, buttons=back)
     elif arg == 'setreact':
         session[e.sender_id] = {"step": arg, 'chat': chat}
-        return await e.edit('ارسل الان الايموجيات المراد وضعها', buttons=back)
+        caption = 'ارسل الان الايموجيات المراد وضعها\n'
+        caption+=f'الرياكت الحالي ( {", ".join(info[id][chat][arg])} )' if join(info[id][chat][arg]) else '...'
+        return await e.edit(caption, buttons=back)
 emoji = [
     "🤣", "❤️", "👍", "👎", "🔥", "🥰", "👏", "😁", "🤔", "🤯", "😱", "🤬", "😡", "😢", "🎉", "🤩", "🤮", "💩", "🙏", "👌", "🕊",
     "🤡", "🥱", "☺️", "😍", "🐳", "❤️‍🔥", "🌚", "🌭", "😙", "💯", "⚡️", "🍌", "🏆", "😡", "😘", "🙊", "😎", "👾", "🤷‍♂️",
     "🤷‍♀️", "🤷", "☃️", "🗿", "🆒", "💘", "🙈", "😇", "😨", "🤝", "✍️", "🤗", "🫡", "🎅", "🎄", "😴", "😭", "🤓", "👻",
-    "👨‍💻", "👀", "🎃", "🙈", "💔", "🤨", "😐", "🍓", "🍾", "💋", "🖕", "😈"
-]
+    "👨‍💻", "👀", "🎃", "🙈", "💔", "🤨", "😐", "🍓", "🍾", "💋", "🖕", "😈"]
 async def _filter(e):
     text = e.text
     id = e.sender_id
