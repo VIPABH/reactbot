@@ -94,14 +94,13 @@ async def _(e):
         save_data()
         return await e.edit('تم حذف القناة ب نجاح', buttons=back)
     elif arg == 'channle':
-        b = [
-            Button.inline('عدد التفاعلات', data=f'react_count:{chat}', style=green, icon=5226513232549664618),
-            Button.inline('تحديد التفاعلات', data=f'setreact:{chat}', style=green, icon=5226513232549664618),
-            Button.inline('عدد المشاهدات', data=f'view_count:{chat}', style=green, icon=5226513232549664618),
+        button = [
+            Button.inline('تحديد التفاعلات', data=f'setreact:{chat}', style=green, icon=5226513232549664618),]
+            [Button.inline('عدد المشاهدات', data=f'view_count:{chat}', style=green, icon=5226513232549664618),
+            [Button.inline('عدد التفاعلات', data=f'react_count:{chat}', style=green, icon=5226513232549664618),]
         ]
-        button = chunk_list(b)
         button.append(back)
-        await e.edit('اختر ما تريد تعديله', buttons=button)
+        await e.edit('اختر ما تريد تحديده', buttons=button)
     elif arg in ('view_count', 'react_count'):
         session[e.sender_id] = {"step": arg, 'chat': chat}
         return await e.edit('ارسل الان العدد', buttons=back)
@@ -199,9 +198,9 @@ async def _filter(e):
         return await e.reply(caption, buttons=back)
     elif step in ('react_count', 'view_count'):
         if not text.isdigit():
-            return await e.reply('ارسل رقم صالح!')    
+            return await e.reply('ارسل رقم صالح!')
         num = int(text)
-        if num < 1 or num > 15:return await e.reply('عذرا صديقي بس العدد لازم يكون اقل من 15 واكبر من 0')
+        if num < 1 or num > 15:return await e.reply('عذرا صديقي بس العدد لازم يكون بين (1-15 )')
         info[sid][chat_id][step] = num
         save_data()
         if id in session:
