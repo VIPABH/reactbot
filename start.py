@@ -121,6 +121,7 @@ async def _filter(e):
     if text == '/start':return
     step = session[id]['step']
     chat_id = session.get(id).get('chat')
+    print(chat_id)
     if step == 'add_channle':
         target = None
         if text.startswith(('https://t.me/', '@')):
