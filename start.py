@@ -103,7 +103,8 @@ async def _(e):
         await e.edit('اختر ما تريد تحديده', buttons=button)
     elif arg in ('view_count', 'react_count'):
         session[e.sender_id] = {"step": arg, 'chat': chat}
-        return await e.edit('ارسل الان العدد', buttons=back)
+        count = f'العدد الحالي ( {info.get(str(e.sender_id), {}).get(arg)} )' if info.get(str(e.sender_id), {}).get(arg) is not None else ''
+        return await e.edit(f'ارسل الان العدد\n{count}', buttons=back)
     elif arg == 'setreact':
         session[e.sender_id] = {"step": arg, 'chat': chat}
         return await e.edit('ارسل الان الايموجيات المراد وضعها', buttons=back)
@@ -201,7 +202,7 @@ async def _filter(e):
             return await e.reply('ارسل رقم صالح!')
         num = int(text)
         if num < 1 or num > 15:return await e.reply('عذرا صديقي بس العدد لازم يكون بين (1-15 )')
-        info[sid][chat_id][step] = num
+        info[sid][chat_id] = num
         save_data()
         if id in session:
             del session[id]
