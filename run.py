@@ -74,7 +74,7 @@ def run_bot():
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)    
     if loop.is_running():
-        loop.create_task(start_everything())
+        loop.create_task(asyncio.run(main()))
     else:
         try:
             loop.run_until_complete(start_everything())
