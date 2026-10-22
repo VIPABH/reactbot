@@ -68,7 +68,7 @@ async def start_callback(e):
         b = []
         text = 'قنواتك المضافة🗒️:'
         for num, chat in enumerate(chats, start=1):
-            b.append(Button.url(chat.title, url=f'https://t.me/{chat.username}' if chat.username else f'https://t.me/c/{str(chat.id).replace("-100", "")}/1', style=blue, icon=5465374681915727405))
+            b.append(Button.inline(chat.title, data=f'channle:{chat.id}', style=green, icon=5258096772776991776))
             url=f'https://t.me/{chat.username}' if chat.username else f'https://t.me/c/{str(chat.id).replace("-100", "")}/1'
             text += f"""
             - القناة {ordinal_arabic_female(num) if ordinal_arabic_female(num) else num} - ( [{chat.title}]({url}) ) - ( `{chat.id}` )"""
