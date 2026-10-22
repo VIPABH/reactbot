@@ -82,7 +82,7 @@ async def start_callback(e):
     elif data == 'add_channle':
         session[id] = {"data": data, 'chat': None}
         await e.edit('ارسل الان الايدي او اليوزر', buttons=back)
-@ABH.on(events.CallbackQuery(pattern=b'^(delete|channle|reactcount|setreact|viewcount)'))
+@ABH.on(events.CallbackQuery(pattern=b'^(delete|channle|react_count|setreact|view_count)'))
 async def _(e):
     data = e.data.decode('utf-8')
     arg, chat = data.split(':')
@@ -95,14 +95,14 @@ async def _(e):
         return await e.edit('تم حذف القناة ب نجاح', buttons=back)
     elif arg == 'channle':
         b = [
-            Button.inline('عدد التفاعلات', data=f'reactcount:{chat}', style=green, icon=5226513232549664618),
+            Button.inline('عدد التفاعلات', data=f'react_count:{chat}', style=green, icon=5226513232549664618),
             Button.inline('تحديد التفاعلات', data=f'setreact:{chat}', style=green, icon=5226513232549664618),
-            Button.inline('عدد المشاهدات', data=f'viewcount:{chat}', style=green, icon=5226513232549664618),
+            Button.inline('عدد المشاهدات', data=f'view_count:{chat}', style=green, icon=5226513232549664618),
         ]
         button = chunk_list(b)
         button.append(back)
         await e.edit('اختر ما تريد تعديله', buttons=button)
-    elif arg in ('viewcount', 'reactcount'):
+    elif arg in ('view_count', 'react_count'):
         session[e.sender_id] = {"step": arg, 'chat': chat}
         return await e.edit('ارسل الان العدد', buttons=back)
     elif arg == 'setreact':
@@ -197,12 +197,12 @@ async def _filter(e):
         save_data()
         del session[id]
         return await e.reply(caption, buttons=back)
-    elif step in ('reactcount', 'viewcount'):
+    elif step in ('react_count', 'view_count'):
         if not text.isdigit():
             return await e.reply('ارسل رقم صالح!')    
-        info[sid][chat_id]['react_count' if step == 'reactcount' else 'view_count'] = int(text)
+        info[sid][chat_id][step] = int(text)
         save_data()
         if id in session:
             del session[id]    
-        label = "التفاعلات" if step == 'reactcount' else "المشاهدات"
+        label = "التفاعلات" if step == 'react_count' else "المشاهدات"
         return await e.reply(f'تم تحديد عدد {label} المطلوبة ( `{text}` )')
