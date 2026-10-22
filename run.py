@@ -63,7 +63,7 @@ async def start_everything():
     loop = asyncio.get_running_loop()
     loop.set_exception_handler(handle_async_exception)
     await ABH.start(bot_token=bot_token)
-    await main())
+    await main()
     print('bot is running')
     await ABH.run_until_disconnected()
 def run_bot():
