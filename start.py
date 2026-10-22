@@ -86,6 +86,7 @@ async def start_callback(e):
 async def _(e):
     data = e.data.decode('utf-8')
     arg, chat = data.split(':')
+    print(chat)
     id = str(e.sender_id)
     if not id in info:return await e.edit('عذرا بس انت ماعندك قنوات حاليا', buttons=back)
     if not chat in info[id]:return await e.edit('عذرا بس القناة هاي مو مضافة', buttons=back)
@@ -167,7 +168,7 @@ async def _filter(e):
         save_data()
         caption = f'**تم اضافة القناة بنجاح🌚**\nاسم القناة: ( {chat.title} )\nايدي القناة: ( `{chat.id}` )\n مالك القناة: ( {await ment(owner)} )\n ايديه: ( `{owner.id}` )\n عدد مشتركين القناة: ( `{participants.total}` )'
         url=f'https://t.me/{chat.username}' if chat.username else f'https://t.me/c/{str(chat.id).replace("-100", "")}/1'
-        caption+=f'( [{chat.title}]({url}) )'
+        caption+=f'\nالرابط ( [{chat.title}]({url}) )'
         b = [Button.url(chat.title, url=url, style=blue, icon=5465374681915727405)]
         button = [b, back]
         del session[id]
