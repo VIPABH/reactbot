@@ -8,6 +8,7 @@ from zoneinfo import ZoneInfo
 from io import BytesIO
 from helpers import *
 from client import *
+import re
 info = create('data.json')
 def save_data():
     try:
@@ -31,13 +32,17 @@ back = [Button.inline('الرجوع', data='back', style=blue, icon=535275916194
 def buttons(e):
     id = str(e.sender_id)
     if id not in info or not info[id].values():
-        b = [Button.inline('اضف قناة', data='add_channle', style=green, icon=5222040745665379997)]
+        b = [
+            Button.inline('اضف قناة', data='add_channle', style=green, icon=5222040745665379997), 
+            Button.inline('رياكت', data='react', style=green, icon=5884106131822875141), 
+        ]
     else:
         b = [
             Button.inline('اضف قناة', data='add_channle', style=blue, icon=5222040745665379997),
             Button.inline('حذف قناة', data='del_channle', style=red, icon=5408832111773757273),
             Button.inline('القنوات المضافة', data='list_channles', style=blue, icon=6323116093724428158),
             Button.inline('الاعدادات', data='settings', style=green, icon=5258096772776991776),
+            Button.inline('رياكت', data='react', style=green, icon=5884106131822875141)
             ]
     return chunk_list(b)
 session = {}
@@ -45,7 +50,7 @@ session = {}
 async def start(e):
     await send(e, f'اهلا عزيزي ( {await ment(e)} ) اني بوت مال رياكشن وظيفتي اضيفلك رياكشنات ومشاهدات لقناتك', buttons=buttons(e))
     session[e.sender_id] = {}
-@ABH.on(events.CallbackQuery(pattern=b'^(add_channle|del_channle|list_channles|settings|back)$'))
+@ABH.on(events.CallbackQuery(pattern=b'^(add_channle|del_channle|list_channles|settings|back|react)$'))
 async def start_callback(e):
     id = e.sender_id
     if not session.get(id):
@@ -86,6 +91,9 @@ async def start_callback(e):
     elif data == 'add_channle':
         session[id] = {"step": data, 'chat': None}
         await e.edit('ارسل الان الايدي او اليوزر', buttons=back)
+    elif data == 'react':
+        session[id] = {"step": data, 'chat': None}
+        return await e.reply('ارسل الان رابط رسالة', buttons=back)
 @ABH.on(events.CallbackQuery(pattern=b'^(delete|channle|react_count|setreact|view_count)'))
 async def _(e):
     data = e.data.decode('utf-8')
@@ -121,6 +129,34 @@ emoji = [
     "🤡", "🥱", "☺️", "😍", "🐳", "❤️‍🔥", "🌚", "🌭", "😙", "💯", "⚡️", "🍌", "🏆", "😡", "😘", "🙊", "😎", "👾", "🤷‍♂️",
     "🤷‍♀️", "🤷", "☃️", "🗿", "🆒", "💘", "🙈", "😇", "😨", "🤝", "✍️", "🤗", "🫡", "🎅", "🎄", "😴", "😭", "🤓", "👻",
     "👨‍💻", "👀", "🎃", "🙈", "💔", "🤨", "😐", "🍓", "🍾", "💋", "🖕", "😈"]
+def extract_channel_and_msg(text):
+    pattern = r'https://t\.me/(?!c/)([a-zA-Z0-9_]+)(?:/(\d+))?'
+    match = re.search(pattern, text)
+    if match:
+        channel_username = match.group(1)
+        message_id = match.group(2) if match.group(2) else None
+        return channel_username, message_id
+    return None
+async def react(event, chat=None, id=None):
+    if not event.is_channel or not event.message or not event.message.post:return
+    chat_id = chat if chat else event.chat_id
+    msg_id = id if id else event.message.id
+    for ABH in ABHS:
+        peer = await ABH.get_entity(chat_id)
+        await ABH(GetMessagesViewsRequest(
+            peer=peer,
+            id=[msg_id],
+            increment=True
+        ))
+        stored = chats_data[e.chat_id]['react']
+        emoji = random.choice(stored) if stored else random.choice(['❤️', '🕊', '🌚'])            
+        await ABH(SendReactionRequest(
+            peer=peer,
+            msg_id=msg_id,
+            reaction=[ReactionEmoji(emoticon=emoji)],
+            big=False
+        ))
+        await asyncio.sleep(1)
 async def _filter(e):
     text = e.text
     id = e.sender_id
@@ -218,3 +254,9 @@ async def _filter(e):
             del session[id]
         label = "التفاعلات" if step == 'react_count' else "المشاهدات"
         return await e.reply(f'تم تحديد عدد {label} المطلوبة ( `{text}` )', buttons=back)
+    elif step == 'react':
+        if not text.startswith('https://t.me/'):return await e.reply('ارسل رابط صالح!', buttons=back)
+        chat, id = extract_channel_and_msg(text)
+        if not chat or not id:return await e.reply('الرابط غير كامل!', buttons=back)
+        await react(e, chat=chat, id=id)
+        return await e.reply('تم عمل الرياكت ب نجاح')
