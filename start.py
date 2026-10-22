@@ -103,7 +103,7 @@ async def _(e):
         await e.edit('اختر ما تريد تحديده', buttons=button)
     elif arg in ('view_count', 'react_count'):
         session[e.sender_id] = {"step": arg, 'chat': chat}
-        count = f'\nالعدد الحالي ( {info.get(str(e.sender_id), {}).get(arg)} )' if info.get(str(e.sender_id), {}).get(arg) is None else '...'
+        count = f'\nالعدد الحالي ( {info.get(str(e.sender_id)).get(arg)} )' if info.get(str(e.sender_id)).get(arg) is None else '...'
         return await e.edit(f'ارسل الان العدد{count}', buttons=back)
     elif arg == 'setreact':
         session[e.sender_id] = {"step": arg, 'chat': chat}
