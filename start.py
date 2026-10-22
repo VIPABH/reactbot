@@ -80,7 +80,7 @@ async def start_callback(e):
         button.append(back)
         return await e.edit('اختر قناة لتعديل اعداداتها', buttons=button)
     elif data == 'add_channle':
-        session[id] = data
+        session[id] = {"data": data, 'chat': None}
         await e.edit('ارسل الان الايدي او اليوزر', buttons=back)
 @ABH.on(events.CallbackQuery(pattern=b'^(delete|channle|reactcount|setreact|viewcount)'))
 async def _(e):
@@ -102,11 +102,11 @@ async def _(e):
         button = chunk_list(b)
         button.append(back)
         await e.edit('اختر ما تريد تعديله', buttons=button)
-    elif arg.endswith('count'):
-        session[e.sender_id] = arg
+    elif arg in ('viewcount', 'reactcount'):
+        session[e.sender_id] = {"data": arg, 'chat': None}
         return await e.edit('ارسل الان العدد', buttons=back)
     elif arg == 'setreact':
-        session[e.sender_id] = arg
+        session[e.sender_id] = {"data": arg, 'chat': None}
         return await e.edit('ارسل الان الايموجيات المراد وضعها', buttons=back)
 emoji = [
     "🤣", "❤️", "👍", "👎", "🔥", "🥰", "👏", "😁", "🤔", "🤯", "😱", "🤬", "😡", "😢", "🎉", "🤩", "🤮", "💩", "🙏", "👌", "🕊",
@@ -119,8 +119,11 @@ async def _filter(e):
     id = e.sender_id
     sid = str(e.sender_id)
     if text == '/start':return
-    if id not in session:return 
-    step = session.get(id)
+    if text == 'اطبع':
+        print(session.get(id, 0))
+    if id not in session:return
+    step = session[id]['step']
+    chat_id = session.get(id).get('chat')
     if step == 'add_channle':
         target = None
         if text.startswith(('https://t.me/', '@')):
@@ -128,7 +131,7 @@ async def _filter(e):
         elif text.isdigit():
             target = int(text)
         else:
-            return await e.reply('ادخل يوزر او ايدي او رابط صالح!', button=back)
+            return await e.reply('ادخل يوزر او ايدي او رابط صالح!', buttons=back)
         if not target:return await e.reply(f'عذرا بس ماكدرت اوصل معلومات ( {target} )')
         chat = await ABH.get_entity(target)        
         if not isinstance(chat, Channel) or not chat.broadcast:
@@ -180,7 +183,7 @@ async def _filter(e):
         if photo_file:
             return await e.reply(caption, file=photo_file, buttons=b)
         return await e.reply(caption, buttons=b)
-    if step == 'setreact':
+    elif step == 'setreact':
         if not text:return await e.reply('يرجى ارسال نص صالح', buttons=back)
         uninvailde = set()
         valid_emojis = set()
@@ -190,8 +193,17 @@ async def _filter(e):
                     valid_emojis.add(char)
                 else:
                     uninvailde.add(t)
-        caption = f'تم اضافة ( {', '.join(valid_emojis)} ) '
+        caption = f'تم اضافة ( {', '.join(valid_emojis)} )'
         if uninvailde:
             caption+=f'\nتم تخطي ( {', '.join(uninvailde)} )'
+        info[id][chat_id]['react'] = valid_emojis
+        save_data()
         del session[id]
         return await e.reply(caption, buttons=back)
+    elif step in ('reactcount', 'viewcount'):
+        if not e.text.isdigit():
+            return await e.reply('ارسل رقم صالح!')
+        info[id][chat_id]['react_count'if step == 'reactcount' else 'view_count'] = int(text)
+        save_data()
+        del session[id]
+        return await e.reply(f'تم تحديد عدد {"التفاعلات" if step == reactcount else 'المشاهدات'} المطلوبة ( `{text}` )')
