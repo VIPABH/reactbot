@@ -119,8 +119,8 @@ async def _filter(e):
     id = e.sender_id
     sid = str(e.sender_id)
     if text == '/start':return
-    step = session[id]['step']
-    chat_id = session.get(id).get('chat')
+    step = session[sid]['step']
+    chat_id = session.get(sid).get('chat')
     if step == 'add_channle':
         target = None
         if text.startswith(('https://t.me/', '@')):
@@ -137,8 +137,9 @@ async def _filter(e):
         if not isinstance(info.get(sid), dict):
             info[sid] = {}
         if step == 'del_channle':
-            if session.get(id):
-                del session[id]
+            if session.get(sid):
+                del session[sid]
+                save_data()
             return await e.reply('تم تجاهل الاضافة')
         if chan_key in info[sid]:
             return await e.reply('عذرا بس القناة هاي ضايفها انت من قبل', buttons=back)
