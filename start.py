@@ -197,7 +197,7 @@ async def _filter(e):
                     valid_emojis.append(char)
                 else:
                     uninvailde.append(t)
-        caption = f'النص ( `{text}` )\n'
+        caption = f'**النص المدخل** ( `{text}` )\n'
         if valid_emojis:
             caption+= f'تم اضافة ( {', '.join(valid_emojis)} )\n'
         if uninvailde:
