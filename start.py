@@ -200,9 +200,11 @@ async def _filter(e):
     elif step in ('react_count', 'view_count'):
         if not text.isdigit():
             return await e.reply('ارسل رقم صالح!')    
-        info[sid][chat_id][step] = int(text)
+        num = int(text)
+        if num < 1 or num > 15:return await e.reply('عذرا صديقي بس العدد لازم يكون اقل من 15 واكبر من 0')
+        info[sid][chat_id][step] = num
         save_data()
         if id in session:
-            del session[id]    
+            del session[id]
         label = "التفاعلات" if step == 'react_count' else "المشاهدات"
         return await e.reply(f'تم تحديد عدد {label} المطلوبة ( `{text}` )')
