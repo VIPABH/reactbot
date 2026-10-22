@@ -42,24 +42,23 @@ async def main():
             print(f"✅ تم تشغيل code{i}")
         else:
             print(f"⚠️ تخطي code{i} لعدم توفر المتغيرات.")
-    global ABH1, ABH2, ABH3, ABH4, ABH5, ABH6, ABH7, ABH8, ABH9, ABH10, ABH11, ABH12, ABH13, ABH14, ABH15, ABHS
-    ABH1 = clients.get("code1")
-    ABH2 = clients.get("code2")
-    ABH3 = clients.get("code3")
-    ABH4 = clients.get("code4")
-    ABH5 = clients.get("code5")
-    ABH6 = clients.get("code6")
-    ABH7 = clients.get("code7")
-    ABH8 = clients.get("code8")
-    ABH9 = clients.get("code9")
-    ABH10 = clients.get("code10")
-    ABH11 = clients.get("code11")
-    ABH12 = clients.get("code12")
-    ABH13 = clients.get("code13")
-    ABH14 = clients.get("code14")
-    ABH15 = clients.get("code15")    
-    ABHS = [ABH1, ABH2, ABH3, ABH4, ABH5, ABH6, ABH7, ABH8, ABH9, ABH10, ABH11, ABH12, ABH13, ABH14, ABH15]
-    all_clients = [ABH] + [c for c in ABHS if c is not None]
     await asyncio.gather(*(client.run_until_disconnected() for client in all_clients))
+ABH1 = clients.get("code1")
+ABH2 = clients.get("code2")
+ABH3 = clients.get("code3")
+ABH4 = clients.get("code4")
+ABH5 = clients.get("code5")
+ABH6 = clients.get("code6")
+ABH7 = clients.get("code7")
+ABH8 = clients.get("code8")
+ABH9 = clients.get("code9")
+ABH10 = clients.get("code10")
+ABH11 = clients.get("code11")
+ABH12 = clients.get("code12")
+ABH13 = clients.get("code13")
+ABH14 = clients.get("code14")
+ABH15 = clients.get("code15")
+ABHS = [ABH1, ABH2, ABH3, ABH4, ABH5, ABH6, ABH7, ABH8, ABH9, ABH10, ABH11, ABH12, ABH13, ABH14, ABH15]
+all_clients = [ABH] + [c for c in ABHS if c is not None]
 if __name__ == "__main__":
     asyncio.run(main())
