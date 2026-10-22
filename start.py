@@ -95,9 +95,9 @@ async def _(e):
         return await e.edit('تم حذف القناة ب نجاح', buttons=back)
     elif arg == 'channle':
         button = [
-            Button.inline('تحديد التفاعلات', data=f'setreact:{chat}', style=green, icon=5226513232549664618),]
+            [Button.inline('تحديد التفاعلات', data=f'setreact:{chat}', style=green, icon=5226513232549664618),]
             [Button.inline('عدد المشاهدات', data=f'view_count:{chat}', style=green, icon=5226513232549664618),
-            [Button.inline('عدد التفاعلات', data=f'react_count:{chat}', style=green, icon=5226513232549664618),]
+            Button.inline('عدد التفاعلات', data=f'react_count:{chat}', style=green, icon=5226513232549664618),]
         ]
         button.append(back)
         await e.edit('اختر ما تريد تحديده', buttons=button)
