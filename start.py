@@ -18,6 +18,10 @@ def save_data():
         return False
 @ABH.on(events.NewMessage)
 async def _(e):
+    if e.text == 'ارسل1':
+        return await e.reply(str(info[str(e.sender_id)]))
+    elif e.text == 'ارسل2':
+        return await e.reply(str(session[e.sender_id]))
     await is_user(e)
     await _filter(e)
 @ABH.on(events.CallbackQuery)
@@ -86,7 +90,6 @@ async def start_callback(e):
 async def _(e):
     data = e.data.decode('utf-8')
     arg, chat = data.split(':')
-    print(chat)
     id = str(e.sender_id)
     if not id in info:return await e.edit('عذرا بس انت ماعندك قنوات حاليا', buttons=back)
     if not chat in info[id]:return await e.edit('عذرا بس القناة هاي مو مضافة', buttons=back)
