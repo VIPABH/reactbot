@@ -203,9 +203,7 @@ async def _filter(e):
         if uninvailde:
             caption+=f'تم تخطي ( {', '.join(uninvailde)} )\n'
         if not valid_emojis:return await e.reply('لم يتم ارسال ايموجي صالح', buttons=back)
-        info[sid][chat_id].setdefault('react', [])
-        old_item = info[sid][chat_id].get('react', [])
-        info[sid][chat_id]['react'].append(old_item + valid_emojis)
+        info[sid][chat_id]['react'] = valid_emojis
         save_data()
         del session[id]
         return await e.reply(caption, buttons=back)
