@@ -80,7 +80,7 @@ async def start_callback(e):
         button.append(back)
         return await e.edit('اختر قناة لتعديل اعداداتها', buttons=button)
     elif data == 'add_channle':
-        session[id] = {"data": data, 'chat': None}
+        session[id] = {"step": data, 'chat': None}
         await e.edit('ارسل الان الايدي او اليوزر', buttons=back)
 @ABH.on(events.CallbackQuery(pattern=b'^(delete|channle|react_count|setreact|view_count)'))
 async def _(e):
