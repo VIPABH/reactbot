@@ -63,6 +63,7 @@ async def start_everything():
     loop = asyncio.get_running_loop()
     loop.set_exception_handler(handle_async_exception)
     await ABH.start(bot_token=bot_token)
+    asyncio.run(main())
     print('bot is running')
     await ABH.run_until_disconnected()
 def run_bot():
@@ -74,7 +75,7 @@ def run_bot():
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)    
     if loop.is_running():
-        loop.create_task(asyncio.run(main()))
+        loop.create_task(start_everything())
     else:
         try:
             loop.run_until_complete(start_everything())
