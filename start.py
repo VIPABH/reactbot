@@ -122,7 +122,7 @@ async def _filter(e):
     if text == 'اطبع':
         print(session.get(id, 0))
     if id not in session:return
-    step = session[id]['step']
+    step = session.get(id).get('step')
     chat_id = session.get(id).get('chat')
     if step == 'add_channle':
         target = None
