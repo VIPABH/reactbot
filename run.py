@@ -3,7 +3,7 @@ import uvloop
 import traceback
 import logging
 import datetime
-from client import *
+# from client import *
 from start import *
 asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 class TelegramLogsHandler(logging.Handler):
