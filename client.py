@@ -64,6 +64,7 @@ async def main():
   ]
   print("All clients are up and running!")
   all_active_clients = list(clients.values()) + [ABH]
+  ABH.run_until_disconnected()
   await asyncio.gather(*(client.run_until_disconnected() for client in all_active_clients if client))
 if __name__ == "__main__":
   asyncio.run(main())
