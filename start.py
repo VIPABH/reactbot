@@ -278,4 +278,4 @@ async def _filter(e):
             f"👥 الحسابات المشاركة: `{status[0]}`\n"
             f"🔥 التفاعلات الناجحة: `{status[1]}`\n"
             f"📍 الهدف: `{chat}`")
-print(len(ABHS))
+print(len(clients))
