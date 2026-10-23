@@ -2,7 +2,7 @@ import asyncio
 import os
 from telethon import TelegramClient, connection
 import redis
-
+from start import *
 r = redis.Redis(host="localhost", port=6379, db=0, decode_responses=True)
 wfffp = 1910015590
 
