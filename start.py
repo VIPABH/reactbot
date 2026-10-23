@@ -25,6 +25,8 @@ async def _(e):
         return await e.reply(str(info[str(e.sender_id)]))
     elif e.text == 'ارسل2':
         return await e.reply(str(session[e.sender_id]))
+    elif e.text == 'ارسل3':
+        return await e.reply(f'{len(clients)} {len(ABHS)}')
     await is_user(e)
     await _filter(e)
 @ABH.on(events.CallbackQuery)
@@ -278,4 +280,3 @@ async def _filter(e):
             f"👥 الحسابات المشاركة: `{status[0]}`\n"
             f"🔥 التفاعلات الناجحة: `{status[1]}`\n"
             f"📍 الهدف: `{chat}`")
-print(len(clients))
