@@ -19,7 +19,6 @@ ABH = TelegramClient(
     "REACTBOT",
     api_id,
     api_hash,
-    connection=connection.ConnectionTcpFull,
     sequential_updates=False,
     auto_reconnect=True,
     connection_retries=None
