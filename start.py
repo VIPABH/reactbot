@@ -167,7 +167,8 @@ async def react(event, chat=None, id=None, emojis=None):
                 big=False
             ))
             status[0] += 1
-        except Exception:
+        except Exception as er:
+            await hint(str(er))
             status[1] += 1
         await asyncio.sleep(1)
     return status
@@ -272,11 +273,12 @@ async def _filter(e):
         if not text.startswith('https://t.me/'):return await e.reply('ارسل رابط صالح!', buttons=back)
         chat, id = extract_channel_and_msg(text)
         if not chat or not id:return await e.reply('الرابط غير كامل!', buttons=back)
-        status_msg = await e.reply(f'تم عمل الرياكت ب نجاح\n نجح')
+        status_msg = await e.reply(f'يجري عمل الرياكت')
         status = await react(e, chat=chat, id=id)
         return await status_msg.edit(
             f"✅ **اكتملت العملية بنجاح**\n\n"
-            f"👥 الحسابات المشاركة: `{status[0]}`\n"
-            f"🔥 التفاعلات الناجحة: `{status[1]}`\n"
+            f"👥 الحسابات المشاركة: `{len(ABHS)}`\n"
+            f"🔥 التفاعلات الناجحة: `{status[0]}`\n"
+            f"❌ التفاعلات الفاشلة: `{status[1]}`\n"
             f"📍 الهدف: `{chat}`")
 ABH.run_until_disconnected()
