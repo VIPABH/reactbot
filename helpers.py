@@ -10,7 +10,7 @@ from telethon.tl.types import (
     MessageMediaPoll, MessageExtendedMedia,)
 from dateutil.relativedelta import relativedelta
 from datetime import datetime
-import asyncio, json, inspect
+import asyncio, json, inspect, os
 from telethon import types
 wfffp = 1910015590
 channels = [
