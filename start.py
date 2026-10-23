@@ -275,12 +275,13 @@ async def _filter(e):
         if not chat or not id:return await e.reply('الرابط غير كامل!', buttons=back)
         status_msg = await e.reply(f'يجري عمل الرياكت')
         status = await react(e, chat=chat, id=id)
-        caption = f"""✅ **اكتملت العملية بنجاح**\n
-            📍 اليوزر: `{chat}
-            👥 الحسابات المشاركة: `{len(ABHS)}`
-            🔥 التفاعلات الناجحة: `{status[0]}`
-            """
+        caption = f"""
+✅ **اكتملت العملية بنجاح**\n
+📍 اليوزر: ( `{chat}` )
+👥 الحسابات المشاركة: ( `{len(ABHS)}` )
+🔥 التفاعلات الناجحة: ( `{status[0]}` )
+"""
         if status[1]>0:
-            caption+= f'❌ التفاعلات الفاشلة: `{status[1]}`'
+            caption+= f'\n❌ التفاعلات الفاشلة: ( `{status[1]}` )'
         return await status_msg.edit(caption)
 ABH.run_until_disconnected()
