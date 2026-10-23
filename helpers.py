@@ -12,7 +12,6 @@ from dateutil.relativedelta import relativedelta
 from datetime import datetime
 import asyncio, json, inspect
 from telethon import types
-from client import *
 wfffp = 1910015590
 channels = [
     'ANYMOUSupdate', 
