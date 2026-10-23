@@ -12,7 +12,7 @@ ABH = TelegramClient(
     sequential_updates=False,
     auto_reconnect=True,
     connection_retries=None
-)
+).start(bot_token=bot_token)
 r = redis.Redis(
     host="localhost",
     port=6379,
