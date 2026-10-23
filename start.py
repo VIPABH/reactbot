@@ -26,6 +26,7 @@ async def _(e):
     elif e.text == 'ارسل2':
         return await e.reply(str(session[e.sender_id]))
     elif e.text == 'ارسل3':
+        await ABH1.send_message(wfffp, '.')
         return await e.reply(f'{len(clients)} {len(ABHS)}')
     await is_user(e)
     await _filter(e)
