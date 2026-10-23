@@ -98,7 +98,7 @@ async def start_callback(e):
         await e.edit('ارسل الان الايدي او اليوزر', buttons=back)
     elif data == 'react':
         session[id] = {"step": data, 'chat': None}
-        return await e.reply('ارسل الان رابط رسالة', buttons=back)
+        return await e.edit('ارسل الان رابط رسالة', buttons=back)
 @ABH.on(events.CallbackQuery(pattern=b'^(delete|channle|react_count|setreact|view_count)'))
 async def _(e):
     data = e.data.decode('utf-8')
@@ -275,10 +275,12 @@ async def _filter(e):
         if not chat or not id:return await e.reply('الرابط غير كامل!', buttons=back)
         status_msg = await e.reply(f'يجري عمل الرياكت')
         status = await react(e, chat=chat, id=id)
-        return await status_msg.edit(
-            f"✅ **اكتملت العملية بنجاح**\n\n"
-            f"👥 الحسابات المشاركة: `{len(ABHS)}`\n"
-            f"🔥 التفاعلات الناجحة: `{status[0]}`\n"
-            f"❌ التفاعلات الفاشلة: `{status[1]}`\n"
-            f"📍 الهدف: `{chat}`")
+        caption = f"""✅ **اكتملت العملية بنجاح**\n
+            📍 اليوزر: `{chat}
+            👥 الحسابات المشاركة: `{len(ABHS)}`
+            🔥 التفاعلات الناجحة: `{status[0]}`
+            """
+        if status[1]>0:
+            caption+= f'❌ التفاعلات الفاشلة: `{status[1]}`'
+        return await status_msg.edit(caption)
 ABH.run_until_disconnected()
