@@ -11,10 +11,10 @@ from io import BytesIO
 from helpers import *
 from client import *
 import asyncio, random, re
+wfffp = 1910015590
 api_id = int(os.getenv("API_ID"))
 api_hash = os.getenv("API_HASH")
-bot_token = os.getenv("BOT_TOKEN")
-wfffp = 1910015590
+bot_token = os.getenv("bot_token")
 ABH = TelegramClient(
     "REACTBOT",
     api_id,
@@ -23,37 +23,18 @@ ABH = TelegramClient(
     sequential_updates=False,
     auto_reconnect=True,
     connection_retries=None
-)
-r = redis.Redis(
-    host="localhost",
-    port=6379,
-    db=0,
-    decode_responses=True
-)
+).start(bot_token=bot_token)
 clients = {}
-async def main():
-    await ABH.start(bot_token=bot_token)
-    print("✅ تم تشغيل البوت الأساسي (ABH)")
-    for i in range(1, 16):
-        api_id_i = os.getenv(f"API_ID{i}")
-        api_hash_i = os.getenv(f"API_HASH{i}")
-        if api_id_i and api_hash_i:
-            print(f"⏳ جاري بدء تشغيل الحساب: code{i}...")
-            client = TelegramClient(
-                f'code{i}',
-                int(api_id_i),
-                api_hash_i,
-                connection=connection.ConnectionTcpFull,
-                sequential_updates=False,
-                auto_reconnect=True,
-                connection_retries=None
-            )
-            await client.start()
-            clients[f'code{i}'] = client
-            print(f"✅ تم تشغيل code{i}")
-        else:
-            print(f"⚠️ تخطي code{i} لعدم توفر المتغيرات.")
-    await asyncio.gather(*(client.run_until_disconnected() for client in all_clients))
+sessions = [f'code{num}' for num in range(1, 16)]
+for i, session in enumerate(sessions, start=1):
+    api_id_i = os.getenv(f"API_ID{i}")
+    api_hash_i = os.getenv(f"API_HASH{i}")
+    if api_id_i and api_hash_i:
+        print(f"Starting {session}...")
+        clients[session] = TelegramClient(session, int(api_id_i), api_hash_i).start()
+        print(f"{session} is working!")
+    else:
+        print(f"Skipping {session} due to missing environment variables.")
 ABH1 = clients.get("code1")
 ABH2 = clients.get("code2")
 ABH3 = clients.get("code3")
@@ -340,3 +321,4 @@ async def _filter(e):
             f"👥 الحسابات المشاركة: `{status[0]}`\n"
             f"🔥 التفاعلات الناجحة: `{status[1]}`\n"
             f"📍 الهدف: `{chat}`")
+ABH.run_until_disconnected()
