@@ -146,16 +146,15 @@ async def react(event, chat=None, id=None, emojis=None):
     chat_id = chat if chat else event.chat_id
     msg_id = id if id else event.message.id
     status = [0, 0]    
-    print(ABHS)
     for ABH in ABHS:
         if not ABH:
             continue
         try:
-            peer = await ABH.get_entity(chat_id)
+            peer = await ABH.get_entity(int(chat_id))
             try:
                 await ABH(GetMessagesViewsRequest(
                     peer=peer,
-                    id=[msg_id],
+                    id=[int(msg_id)],
                     increment=True
                 ))
             except Exception:
@@ -163,7 +162,7 @@ async def react(event, chat=None, id=None, emojis=None):
             emoji = random.choice(emojis) if emojis else random.choice(['❤️', '🕊', '🌚'])
             await ABH(SendReactionRequest(
                 peer=peer,
-                msg_id=msg_id,
+                msg_id=int(msg_id),
                 reaction=[ReactionEmoji(emoticon=emoji)],
                 big=False
             ))
