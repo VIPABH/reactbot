@@ -150,7 +150,7 @@ async def react(event, chat=None, id=None, emojis=None):
         if not ABH:
             continue
         try:
-            peer = await ABH.get_entity(int(chat_id))
+            peer = await ABH.get_entity(chat_id)
             try:
                 await ABH(GetMessagesViewsRequest(
                     peer=peer,
