@@ -275,6 +275,6 @@ async def _filter(e):
         status = await react(e, chat=chat, id=id)
         return await status_msg.edit(
             f"✅ **اكتملت العملية بنجاح**\n\n"
-            f"👥 الحسابات المشاركة: `{len(status[0])}`\n"
+            f"👥 الحسابات المشاركة: `{status[0]}`\n"
             f"🔥 التفاعلات الناجحة: `{status[1]}`\n"
             f"📍 الهدف: `{chat}`")
