@@ -143,8 +143,6 @@ def extract_channel_and_msg(text):
         return channel_username, message_id
     return None
 async def react(event, chat=None, id=None, emojis=None):
-    if not event.is_channel or not event.message or not event.message.post:
-        return [0, 0]
     chat_id = chat if chat else event.chat_id
     msg_id = id if id else event.message.id
     status = [0, 0]    
