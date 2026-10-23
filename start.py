@@ -9,7 +9,7 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 from io import BytesIO
 from helpers import *
-from client import *
+# from client import *
 import asyncio, random, re
 wfffp = 1910015590
 api_id = int(os.getenv("API_ID"))
