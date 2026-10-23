@@ -81,8 +81,8 @@ async def main():
     all_clients = [ABH] + [c for c in ABHS if c is not None]
     print("🚀 تعمل الآن جميع الحسابات والبوتات بنجاح ومستعدة للتحكم والاستماع!")
     await asyncio.gather(*(client.run_until_disconnected() for client in all_clients))
-if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        print("\n🛑 تم إيقاف النظام يدوياً.")
+# if __name__ == "__main__":
+#     try:
+#         asyncio.run(main())
+#     except KeyboardInterrupt:
+#         print("\n🛑 تم إيقاف النظام يدوياً.")
