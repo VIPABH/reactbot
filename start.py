@@ -1,27 +1,21 @@
+from telethon.tl.functions.messages import GetMessagesViewsRequest, SendReactionRequest
 from telethon.tl.functions.channels import GetParticipantRequest
 from telethon.tl.types import MessageEntityCustomEmoji
 from telethon.tl.types import ChannelParticipantAdmin
 from telethon.errors import UserNotParticipantError
+from telethon.tl.types import ReactionEmoji
 from telethon.tl.types import Channel
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from io import BytesIO
 from helpers import *
 from client import *
-import re
+import asyncio, random, re
 info = create('data.json')
-chats_data = create('chats_data.json')
 def save_data():
     try:
         with open('data.json', 'w', encoding='utf-8') as f:
             json.dump(info, f, ensure_ascii=False, indent=4)
-        return True
-    except Exception as e:
-        return False
-def save_chats():
-    try:
-        with open('data.json', 'w', encoding='utf-8') as f:
-            json.dump(chats_data, f, ensure_ascii=False, indent=4)
         return True
     except Exception as e:
         return False
@@ -145,27 +139,37 @@ def extract_channel_and_msg(text):
         message_id = match.group(2) if match.group(2) else None
         return channel_username, message_id
     return None
-async def react(event, chat=None, id=None, emoji=None):
-    if not event.is_channel or not event.message or not event.message.post:return
+async def react(event, chat=None, id=None, emojis=None):
+    if not event.is_channel or not event.message or not event.message.post:
+        return [0, 0]
     chat_id = chat if chat else event.chat_id
     msg_id = id if id else event.message.id
+    status = [0, 0]    
     for ABH in ABHS:
-        peer = await ABH.get_entity(chat_id)
-        await ABH(GetMessagesViewsRequest(
-            peer=peer,
-            id=[msg_id],
-            increment=True
-        ))
-        if not emoji:
-            stored = chats_data[e.chat_id]['react']
-            emoji = random.choice(stored) if stored else random.choice(['❤️', '🕊', '🌚'])            
-        await ABH(SendReactionRequest(
-            peer=peer,
-            msg_id=msg_id,
-            reaction=[ReactionEmoji(emoticon=emoji)],
-            big=False
-        ))
+        if not ABH:
+            continue
+        try:
+            peer = await ABH.get_entity(chat_id)
+            try:
+                await ABH(GetMessagesViewsRequest(
+                    peer=peer,
+                    id=[msg_id],
+                    increment=True
+                ))
+            except Exception:
+                pass            
+            emoji = random.choice(emojis) if emojis else random.choice(['❤️', '🕊', '🌚'])
+            await ABH(SendReactionRequest(
+                peer=peer,
+                msg_id=msg_id,
+                reaction=[ReactionEmoji(emoticon=emoji)],
+                big=False
+            ))
+            status[0] += 1
+        except Exception:
+            status[1] += 1
         await asyncio.sleep(1)
+    return status
 async def _filter(e):
     text = e.text
     id = e.sender_id
@@ -208,7 +212,7 @@ async def _filter(e):
         owner = await get_channel_owner(chat)
         participants = await ABH.get_participants(chat, limit=0)
         current_time = datetime.now(ZoneInfo("Asia/Baghdad")).strftime("%Y-%m-%d %H:%M:%S")
-        chats_data[chat.id] = {
+        info[sid][chat.id] = {
             'name': chat.title,
             'owner': owner.id,
             'added_by': e.sender_id,
@@ -216,10 +220,6 @@ async def _filter(e):
             'text': text,
             'time': current_time,
             }
-        save_chats()
-        if sid not in info:
-            info[sid] = []
-        info[sid].append(chat.id)
         save_data()
         caption = f'**تم اضافة القناة بنجاح🌚**\nاسم القناة: ( {chat.title} )\nايدي القناة: ( `{chat.id}` )\n مالك القناة: ( {await ment(owner)} )\n ايديه: ( `{owner.id}` )\n عدد مشتركين القناة: ( `{participants.total}` )'
         url=f'https://t.me/{chat.username}' if chat.username else f'https://t.me/c/{str(chat.id).replace("-100", "")}/1'
@@ -271,5 +271,10 @@ async def _filter(e):
         if not text.startswith('https://t.me/'):return await e.reply('ارسل رابط صالح!', buttons=back)
         chat, id = extract_channel_and_msg(text)
         if not chat or not id:return await e.reply('الرابط غير كامل!', buttons=back)
-        await react(e, chat=chat, id=id, emoji='🌚')
-        return await e.reply('تم عمل الرياكت ب نجاح')
+        status_msg = await e.reply(f'تم عمل الرياكت ب نجاح\n نجح')
+        status = await react(e, chat=chat, id=id)
+        return await status_msg.edit(
+            f"✅ **اكتملت العملية بنجاح**\n\n"
+            f"👥 الحسابات المشاركة: `{len(status[0])}`\n"
+            f"🔥 التفاعلات الناجحة: `{status[1]}`\n"
+            f"📍 الهدف: `{chat}`")
