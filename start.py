@@ -136,7 +136,7 @@ async def _(e):
             caption+=f'الرياكت الحالي ( {', '.join(info[id][chat]['react'])} )'
         return await e.edit(caption, buttons=back)
 emoji = [
-    "🤣", "❤️", "👍", "👎", "🔥", "🥰", "👏", "😁", "🤔", "🤯", "😱", "🤬", "😡", "😢", "🎉", "🤩", "🤮", "💩", "🙏", "👌", "🕊",
+    "🤣", "❤️", "👍", "👎", "🔥", "🥰", "👏", "😁", "🤯", "😱", "🤬", "😡", "😢", "🎉", "🤩", "🤮", "💩", "🙏", "👌", "🕊",
     "🤡", "🥱", "☺️", "😍", "🐳", "❤️‍🔥", "🌚", "🌭", "😙", "💯", "⚡️", "🍌", "🏆", "😡", "😘", "🙊", "😎", "👾", "🤷‍♂️",
     "🤷‍♀️", "🤷", "☃️", "🗿", "🆒", "💘", "🙈", "😇", "😨", "🤝", "✍️", "🤗", "🫡", "🎅", "🎄", "😴", "😭", "🤓", "👻",
     "👨‍💻", "👀", "🎃", "🙈", "💔", "🤨", "😐", "🍓", "🍾", "💋", "🖕", "😈"]
@@ -186,6 +186,7 @@ async def _filter(e):
     formatted_date = datetime.now().strftime("%Y %m %d")
     if text == '/start':return
     if id not in session:return
+    if 'setp' not in session[id]:return
     step = session[id]['step']
     chat_id = session.get(id).get('chat')
     if step == 'add_channle':
@@ -296,8 +297,6 @@ async def _filter(e):
             for char in t:
                 if char in emoji:
                     valid_emojis.append(char)
-                else:
-                    uninvailde.append(t)
         status_msg = await e.reply(f'يجري عمل الرياكت')
         chat = session[id]['temp']['chat']
         mid = session[id]['temp']['id']
@@ -311,8 +310,6 @@ async def _filter(e):
             caption+= f'\n❌ التفاعلات الفاشلة: ( `{status[1]}` )'
         if status[0]>0:
             limit[formatted_date][id] -= 1
-        if uninvailde:
-            caption+=f'\nتم تخطي الايموجيات التالية ( {"و ".join(uninvailde)} )'
         if 'temp' in session[id]:
             del session[id]['temp']
         return await status_msg.edit(caption)
