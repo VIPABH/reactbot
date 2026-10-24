@@ -135,11 +135,6 @@ async def _(e):
         if 'react' in info[id][chat]:
             caption+=f'الرياكت الحالي ( {', '.join(info[id][chat]['react'])} )'
         return await e.edit(caption, buttons=back)
-emoji = [
-    "🤣", "❤️", "👍", "👎", "🔥", "🥰", "👏", "😁", "🤯", "😱", "🤬", "😡", "😢", "🎉", "🤩", "🤮", "💩", "🙏", "👌", "🕊",
-    "🤡", "🥱", "☺️", "😍", "🐳", "❤️‍🔥", "🌚", "🌭", "😙", "💯", "⚡️", "🍌", "🏆", "😡", "😘", "🙊", "😎", "👾", "🤷‍♂️",
-    "🤷‍♀️", "🤷", "☃️", "🗿", "🆒", "💘", "🙈", "😇", "😨", "🤝", "✍️", "🤗", "🫡", "🎅", "🎄", "😴", "😭", "🤓", "👻",
-    "👨‍💻", "👀", "🎃", "🙈", "💔", "🤨", "😐", "🍓", "🍾", "💋", "🖕", "😈"]
 def extract_channel_and_msg(text):
     pattern = r'https://t\.me/(?!c/)([a-zA-Z0-9_]+)(?:/(\d+))?'
     match = re.search(pattern, text)
@@ -148,6 +143,11 @@ def extract_channel_and_msg(text):
         message_id = match.group(2) if match.group(2) else None
         return channel_username, message_id
     return None
+emoji = [
+    "🤣", "❤️", "👍", "👎", "🔥", "🥰", "👏", "😁", "🤯", "😱", "🤬", "😡", "😢", "🎉", "🤩", "🤮", "💩", "🙏", "👌", "🕊",
+    "🤡", "🥱", "😍", "🐳", "❤️‍🔥", "🌚", "🌭", "💯", "⚡️", "🍌", "🏆", "😡", "😘", "🙊", "😎", "👾", "🤷‍♂️",
+    "🤷‍♀️", "🤷", "☃️", "🗿", "🆒", "💘", "🙈", "😇", "😨", "🤝", "✍️", "🤗", "🫡", "🎅", "🎄", "😴", "😭", "🤓", "👻",
+    "👨‍💻", "👀", "🎃", "🙈", "💔", "🤨", "😐", "🍓", "🍾", "💋", "🖕", "😈"]
 async def react(event, chat=None, id=None, emojis=None):
     chat_id = chat if chat else event.chat_id
     msg_id = id if id else event.message.id
@@ -164,7 +164,7 @@ async def react(event, chat=None, id=None, emojis=None):
                     increment=True
                 ))
             except Exception:
-                pass            
+                pass
             emoji = random.choice(emojis) if emojis else random.choice(['❤️', '🕊', '🌚'])
             await ABH(SendReactionRequest(
                 peer=peer,
@@ -284,6 +284,7 @@ async def _filter(e):
         if not chat or not mid:return await e.reply('الرابط غير كامل!', buttons=back)
         if 'temp' not in session[id]:
             session[id]['temp'] = {}
+        print(limit[formatted_date][id])
         session[id]['step'] = 'setemoji'
         session[id]['temp']['chat'] = chat
         session[id]['temp']['id'] = mid
@@ -311,5 +312,6 @@ async def _filter(e):
             limit[formatted_date][id] -= 1
         if 'temp' in session[id]:
             del session[id]['temp']
+        print(limit[formatted_date][id])
         return await status_msg.edit(caption)
 ABH.run_until_disconnected()
