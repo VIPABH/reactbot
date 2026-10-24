@@ -283,8 +283,8 @@ async def _filter(e):
         chat, mid = extract_channel_and_msg(text)
         if not chat or not mid:return await e.reply('الرابط غير كامل!', buttons=back)
         session[id]['step'] = 'setemoji'
-        session[id]['chat'] = chat
-        session[id]['id'] = mid
+        session[id]['temp']['chat'] = chat
+        session[id]['temp']['id'] = mid
         await try_forward(e, chat=chat, id=id)
         return await e.reply('ارسل الان التفاعلات المطلوبة')
     elif step == 'setemoji':
@@ -297,7 +297,9 @@ async def _filter(e):
                 else:
                     uninvailde.add(t)
         status_msg = await e.reply(f'يجري عمل الرياكت')
-        status = await react(e, chat=chat, id=id, emojis=valid_emojis)
+        chat = session[id]['temp']['chat']
+        mid = session[id]['temp']['id']
+        status = await react(e, chat=chat, id=mid, emojis=valid_emojis)
         caption = f"""
 ✅ **اكتملت العملية بنجاح**\n
 📍 اليوزر: ( `{chat}` )
@@ -309,5 +311,7 @@ async def _filter(e):
             limit[id] -= 1
         if uninvailde:
             caption+=f'\nتم تخطي الايموجيات التالية ( {", ".join(uninvailde)} )'
+        if 'temp' in session[id]:
+            del session[id]['temp']
         return await status_msg.edit(caption)
 ABH.run_until_disconnected()
