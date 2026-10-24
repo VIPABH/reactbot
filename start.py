@@ -21,13 +21,6 @@ def save_data():
         return False
 @ABH.on(events.NewMessage)
 async def _(e):
-    if e.text == 'ارسل1':
-        return await e.reply(str(info[str(e.sender_id)]))
-    elif e.text == 'ارسل2':
-        return await e.reply(str(session[e.sender_id]))
-    elif e.text == 'ارسل3':
-        await ABH1.send_message(wfffp, '.')
-        return await e.reply(f'{len(clients)} {len(ABHS)}')
     await is_user(e)
     await _filter(e)
 @ABH.on(events.CallbackQuery)
@@ -286,23 +279,35 @@ async def _filter(e):
         label = "التفاعلات" if step == 'react_count' else "المشاهدات"
         return await e.reply(f'تم تحديد عدد {label} المطلوبة ( `{text}` )', buttons=back)
     elif step == 'react':
-        if limit[formatted_date][id] <= 0:return await e.reply('اعذرنه الطيب انتهت محاولاتك')
         if not text.startswith('https://t.me/'):return await e.reply('ارسل رابط صالح!', buttons=back)
-        chat, id = extract_channel_and_msg(text)
-        if not chat or not id:return await e.reply('الرابط غير كامل!', buttons=back)
+        chat, mid = extract_channel_and_msg(text)
+        if not chat or not mid:return await e.reply('الرابط غير كامل!', buttons=back)
+        session[id]['step'] = 'setemoji'
+        session[id]['chat'] = chat
+        session[id]['id'] = mid
+        await try_forward(e, chat=chat, id=id)
+        return await e.reply('ارسل الان التفاعلات المطلوبة')
+    elif step == 'setemoji':
+        valid_emojis = []
+        uninvailde = set()
+        for t in text.split():
+            for char in t:
+                if char in emoji:
+                    valid_emojis.append(char)
+                else:
+                    uninvailde.add(t)
         status_msg = await e.reply(f'يجري عمل الرياكت')
-        status = await react(e, chat=chat, id=id)
+        status = await react(e, chat=chat, id=id, emojis=valid_emojis)
         caption = f"""
 ✅ **اكتملت العملية بنجاح**\n
 📍 اليوزر: ( `{chat}` )
 👥 الحسابات المشاركة: ( `{len(ABHS)}` )
-🔥 التفاعلات الناجحة: ( `{status[0]}` )
-"""
+🔥 التفاعلات الناجحة: ( `{status[0]}` )"""
         if status[1]>0:
             caption+= f'\n❌ التفاعلات الفاشلة: ( `{status[1]}` )'
         if status[0]>0:
-            if not id in limit:
-                limit[id] = 3
             limit[id] -= 1
+        if uninvailde:
+            caption+=f'\nتم تخطي الايموجيات التالية ( {", ".join(uninvailde)} )'
         return await status_msg.edit(caption)
 ABH.run_until_disconnected()
