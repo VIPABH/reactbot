@@ -67,4 +67,4 @@ async def update_repo(event):
         else:
             await hint(f" حدث خطأ أثناء التحديث:\n\n{stderr}")
     except Exception as e:
-        await hint(f"⚠️ خطأ غير متوقع:\n\n{e}")
+        await e.reply(f"⚠️ خطأ غير متوقع:\n\n{e}")
