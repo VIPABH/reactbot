@@ -256,7 +256,6 @@ def ordinal_arabic_female(n):
     one_part = n % 10
     return f"{units_compound[one_part]} و{tens[ten_part]}"
 async def try_forward(event, r=None, chat=None, id=None, to=None, drop_author=None):
-    gidvar = LC(event.chat_id)
     if id:
         msg = id
     elif r:
@@ -264,7 +263,7 @@ async def try_forward(event, r=None, chat=None, id=None, to=None, drop_author=No
     else:
         msg = event.id
     from_peer = chat if chat else event.chat_id
-    target_chat = to if to else gidvar
+    target_chat = e.chat_id
     if not target_chat: 
         return False        
     try:
