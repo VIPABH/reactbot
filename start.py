@@ -107,7 +107,6 @@ async def start_callback(e):
             limit[formatted_date] = {}
         if id not in limit[formatted_date]:
             limit[formatted_date][id] = 3
-        if id not in info or not info[id].values():
         tries = limit[formatted_date][id]
         if tries <= 0:
             return await e.answer('عذرا محاولاتك انتهت حاول مجددا غدا')
