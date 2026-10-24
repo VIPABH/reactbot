@@ -282,6 +282,8 @@ async def _filter(e):
         if not text.startswith('https://t.me/'):return await e.reply('ارسل رابط صالح!', buttons=back)
         chat, mid = extract_channel_and_msg(text)
         if not chat or not mid:return await e.reply('الرابط غير كامل!', buttons=back)
+        if 'temp' not in session[id]:
+            session[id]['temp'] = {}
         session[id]['step'] = 'setemoji'
         session[id]['temp']['chat'] = chat
         session[id]['temp']['id'] = mid
