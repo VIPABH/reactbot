@@ -30,9 +30,9 @@ def save_data(all=None):
 send_msg = {}
 @ABH.on(events.NewMessage)
 async def _(e):
+    await is_chat_in(e)
     await is_user(e)
     await _filter(e)
-    await is_chat_in(e)
 async def is_chat_in(e):
     chat_id = str(e.chat_id)
     print(chat_id)
