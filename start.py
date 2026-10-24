@@ -37,6 +37,10 @@ back = [Button.inline('الرجوع', data='back', style=blue, icon=535275916194
 def buttons(e):
     id = str(e.sender_id)
     formatted_date = datetime.now().strftime("%Y %m %d")
+    if formatted_date not in limit:
+        limit[formatted_date] = {}
+    if id not in limit[formatted_date]:
+        limit[formatted_date][id] = 3
     if id not in info or not info[id].values():
         b = [
             Button.inline('اضف قناة', data='add_channle', style=green, icon=5222040745665379997), 
@@ -61,11 +65,6 @@ async def start_callback(e):
     id = e.sender_id
     if not session.get(id):
         session[e.sender_id] = {}
-    formatted_date = datetime.now().strftime("%Y %m %d")
-    if formatted_date not in limit:
-        limit[formatted_date] = {}
-    if id not in limit[formatted_date]:
-        limit[formatted_date][id] = 3
     data = e.data.decode('utf-8')
     if data == 'back':
         return await e.edit('تفضل الازرار كدامك', buttons=buttons(e))
