@@ -37,7 +37,7 @@ async def is_chat_in(e):
     chat_id = str(e.chat_id)
     if '-100' in chat_id:
         chat_id = chat_id.replace('-100', '')
-    print(chat_id)
+    print(chat_id in chat_info)
     if chat_id in chat_info:
         id = chat_info[chat_id]
         not_isuser = await is_user(e, id=id, callable=True)
