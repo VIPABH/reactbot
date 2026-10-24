@@ -9,8 +9,8 @@ import asyncio, random, re, os
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from io import BytesIO
-from client import *
 from helpers import *
+from client import *
 info = create('data.json')
 def save_data():
     try:
@@ -36,10 +36,11 @@ async def _(e):
 back = [Button.inline('الرجوع', data='back', style=blue, icon=5352759161945867747)]
 def buttons(e):
     id = str(e.sender_id)
+    formatted_date = datetime.now().strftime("%Y %m %d")
     if id not in info or not info[id].values():
         b = [
             Button.inline('اضف قناة', data='add_channle', style=green, icon=5222040745665379997), 
-            Button.inline('رياكت', data='react', style=green, icon=5884106131822875141), 
+            Button.inline(f'رياكت ( 3\{limit.get(e.sender_id, 3)} )', data='react', style=green if limit[formatted_date][id] >= 1 else red, icon=5884106131822875141), 
         ]
     else:
         b = [
@@ -47,7 +48,7 @@ def buttons(e):
             Button.inline('حذف قناة', data='del_channle', style=red, icon=5408832111773757273),
             Button.inline('القنوات المضافة', data='list_channles', style=blue, icon=6323116093724428158),
             Button.inline('الاعدادات', data='settings', style=green, icon=5258096772776991776),
-            Button.inline('رياكت', data='react', style=green, icon=5884106131822875141)
+            Button.inline(f'رياكت ( 3\{limit.get(e.sender_id, 3)} )', data='react', style=green if limit[formatted_date][id] >= 1 else red, icon=5884106131822875141), 
             ]
     return chunk_list(b)
 session = {}
@@ -60,6 +61,11 @@ async def start_callback(e):
     id = e.sender_id
     if not session.get(id):
         session[e.sender_id] = {}
+    formatted_date = datetime.now().strftime("%Y %m %d")
+    if formatted_date not in limit:
+        limit[formatted_date] = {}
+    if id not in limit[formatted_date]:
+        limit[formatted_date][id] = 3
     data = e.data.decode('utf-8')
     if data == 'back':
         return await e.edit('تفضل الازرار كدامك', buttons=buttons(e))
@@ -97,6 +103,9 @@ async def start_callback(e):
         session[id] = {"step": data, 'chat': None}
         await e.edit('ارسل الان الايدي او اليوزر', buttons=back)
     elif data == 'react':
+        tries = limit[formatted_date][id]
+        if tries <= 0:
+            return await e.answer('عذرا محاولاتك انتهت حاول مجددا غدا')
         session[id] = {"step": data, 'chat': None}
         return await e.edit('ارسل الان رابط رسالة', buttons=back)
 @ABH.on(events.CallbackQuery(pattern=b'^(delete|channle|react_count|setreact|view_count)'))
@@ -172,10 +181,12 @@ async def react(event, chat=None, id=None, emojis=None):
             status[1] += 1
         await asyncio.sleep(1)
     return status
+limit = {}
 async def _filter(e):
     text = e.text
     id = e.sender_id
     sid = str(e.sender_id)
+    formatted_date = datetime.now().strftime("%Y %m %d")
     if text == '/start':return
     step = session[id]['step']
     chat_id = session.get(id).get('chat')
@@ -270,6 +281,7 @@ async def _filter(e):
         label = "التفاعلات" if step == 'react_count' else "المشاهدات"
         return await e.reply(f'تم تحديد عدد {label} المطلوبة ( `{text}` )', buttons=back)
     elif step == 'react':
+        if limit[formatted_date][id] >= 0:return await e.edit('اعذرنه الطيب انتهت محاولاتك')
         if not text.startswith('https://t.me/'):return await e.reply('ارسل رابط صالح!', buttons=back)
         chat, id = extract_channel_and_msg(text)
         if not chat or not id:return await e.reply('الرابط غير كامل!', buttons=back)
@@ -283,5 +295,9 @@ async def _filter(e):
 """
         if status[1]>0:
             caption+= f'\n❌ التفاعلات الفاشلة: ( `{status[1]}` )'
+        if status[0]>0:
+            if not id in limit:
+                limit[id] = 3
+            limit[id] -= 1
         return await status_msg.edit(caption)
 ABH.run_until_disconnected()
