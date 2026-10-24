@@ -174,7 +174,7 @@ async def react(event, chat=None, id=None, emojis=None):
             ))
             status[0] += 1
         except Exception as er:
-            await hint(str(er))
+            await hint(f'{er} ----- {emoji}')
             status[1] += 1
         await asyncio.sleep(1)
     return status
@@ -291,13 +291,13 @@ async def _filter(e):
         return await e.reply('ارسل الان التفاعلات المطلوبة')
     elif step == 'setemoji':
         valid_emojis = []
-        uninvailde = set()
+        uninvailde = []
         for t in text.split():
             for char in t:
                 if char in emoji:
                     valid_emojis.append(char)
                 else:
-                    uninvailde.add(t)
+                    uninvailde.append(t)
         status_msg = await e.reply(f'يجري عمل الرياكت')
         chat = session[id]['temp']['chat']
         mid = session[id]['temp']['id']
