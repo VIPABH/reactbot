@@ -102,6 +102,7 @@ async def start_callback(e):
         session[id] = {"step": data, 'chat': None}
         await e.edit('ارسل الان الايدي او اليوزر', buttons=back)
     elif data == 'react':
+        formatted_date = datetime.now().strftime("%Y %m %d")
         tries = limit[formatted_date][id]
         if tries <= 0:
             return await e.answer('عذرا محاولاتك انتهت حاول مجددا غدا')
