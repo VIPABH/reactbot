@@ -272,7 +272,9 @@ async def _filter(e):
             'text': text,
             'time': current_time,
             }
-        chat_info[chat.id] = sid
+        if chan_key not in chat_info:
+            chat_info[chan_key] = []
+        chat_info[chan_key] = sid
         save_data(all=True)
         caption = f'**تم اضافة القناة بنجاح🌚**\nاسم القناة: ( {chat.title} )\nايدي القناة: ( `{chat.id}` )\n مالك القناة: ( {await ment(owner)} )\n ايديه: ( `{owner.id}` )\n عدد مشتركين القناة: ( `{participants.total}` )'
         url=f'https://t.me/{chat.username}' if chat.username else f'https://t.me/c/{str(chat.id).replace("-100", "")}/1'
