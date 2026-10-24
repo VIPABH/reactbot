@@ -37,7 +37,7 @@ async def is_chat_in(e):
     chat_id = str(e.chat_id)
     if '-100' in chat_id:
         chat_id = chat_id.replace('-100', '')
-    print(chat_id in chat_info)
+    print(chat_id)
     if chat_id in chat_info:
         id = chat_info[chat_id]
         not_isuser = await is_user(e, id=id, callable=True)
@@ -193,8 +193,11 @@ async def react(event, chat=None, id=None, emojis=None):
     for ABH in ABHS:
         if not ABH:
             continue
+        emoji = None
         try:
-            peer = await ABH.get_entity(chat_id)
+            c_id = str(chat_id)
+            target_id = int(f"-100{c_id}") if not c_id.startswith('-') else int(c_id)
+            peer = await ABH.get_entity(target_id)
             try:
                 await ABH(GetMessagesViewsRequest(
                     peer=peer,
@@ -272,8 +275,6 @@ async def _filter(e):
             'text': text,
             'time': current_time,
             }
-        if chan_key not in chat_info:
-            chat_info[chan_key] = []
         chat_info[chan_key] = sid
         save_data(all=True)
         caption = f'**تم اضافة القناة بنجاح🌚**\nاسم القناة: ( {chat.title} )\nايدي القناة: ( `{chat.id}` )\n مالك القناة: ( {await ment(owner)} )\n ايديه: ( `{owner.id}` )\n عدد مشتركين القناة: ( `{participants.total}` )'
