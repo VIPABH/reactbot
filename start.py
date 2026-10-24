@@ -35,7 +35,8 @@ async def _(e):
     await _filter(e)
 async def is_chat_in(e):
     chat_id = str(e.chat_id)
-    print(chat_id)
+    if '-100' in chat_id:
+        chat_id = chat_id.replace('-100', '')
     if chat_id in chat_info:
         id = chat_info[chat_id]
         not_isuser = await is_user(e, id=id, callable=True)
@@ -235,7 +236,9 @@ async def _filter(e):
         chat = await ABH.get_entity(target)        
         if not isinstance(chat, Channel) or not chat.broadcast:
             return await e.reply('صديقي اتفقنه تضيف قناة مو شيء اخر!', buttons=back)
-        chan_key = str(chat.id)
+        _chan_key = str(chat.id)
+        if '-100' in _chan_key:
+            chan_key = _chan_key.replace('-100', '')
         if not isinstance(info.get(sid), dict):
             info[sid] = {}
         if step == 'del_channle':
@@ -244,7 +247,7 @@ async def _filter(e):
             return await e.reply('تم تجاهل الاضافة', buttons=back)
         if chan_key in info[sid]:
             return await e.reply('عذرا بس القناة هاي ضايفها انت من قبل', buttons=back)
-        if chan_key in chat_info and int(chat_info[chat.id]) != e.sender_id:return await e.reply(f'عذرا بس هاي القناة مضافة من ( {await ment(int(chat_info[chat.id]))} )')
+        if chan_key in chat_info and int(chat_info[chan_key]) != e.sender_id:return await e.reply(f'عذرا بس هاي القناة مضافة من ( {await ment(int(chat_info[chat.id]))} )')
         try:
             bot_user = await ABH.get_me()
             participant = await ABH(GetParticipantRequest(
@@ -259,7 +262,7 @@ async def _filter(e):
         owner = await get_channel_owner(chat)
         participants = await ABH.get_participants(chat, limit=0)
         current_time = datetime.now(ZoneInfo("Asia/Baghdad")).strftime("%Y-%m-%d %H:%M:%S")
-        info[sid][chat.id] = {
+        info[sid][chan_key] = {
             'name': chat.title,
             'owner': owner.id,
             'added_by': e.sender_id,
