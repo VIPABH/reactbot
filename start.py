@@ -186,8 +186,7 @@ async def _filter(e):
     formatted_date = datetime.now().strftime("%Y %m %d")
     if text == '/start':return
     if id not in session:return
-    if 'setp' not in session[id]:return
-    step = session[id]['step']
+    step = session[id].get('step')
     chat_id = session.get(id).get('chat')
     if step == 'add_channle':
         target = None
