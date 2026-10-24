@@ -22,7 +22,7 @@ def save_data(all=None):
         return False
     if all:
         try:
-            with open('data.json', 'w', encoding='utf-8') as f:
+            with open('chat_info.json', 'w', encoding='utf-8') as f:
                 json.dump(chat_info, f, ensure_ascii=False, indent=4)
             return True
         except Exception as e:
@@ -151,7 +151,8 @@ async def _(e):
     if not chat in info[id]:return await e.edit('عذرا بس القناة هاي مو مضافة', buttons=back)
     if arg == 'delete':
         del info[id][chat]
-        save_data()
+        del chat_info[chat]
+        save_data(all=True)
         return await e.edit('تم حذف القناة ب نجاح', buttons=back)
     elif arg == 'channle':
         button = [
