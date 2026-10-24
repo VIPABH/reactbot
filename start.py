@@ -192,6 +192,7 @@ async def _filter(e):
     sid = str(e.sender_id)
     formatted_date = datetime.now().strftime("%Y %m %d")
     if text == '/start':return
+    if id not in session:return
     step = session[id]['step']
     chat_id = session.get(id).get('chat')
     if step == 'add_channle':
