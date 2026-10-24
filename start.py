@@ -285,7 +285,7 @@ async def _filter(e):
         label = "التفاعلات" if step == 'react_count' else "المشاهدات"
         return await e.reply(f'تم تحديد عدد {label} المطلوبة ( `{text}` )', buttons=back)
     elif step == 'react':
-        if limit[formatted_date][id] >= 0:return await e.reply('اعذرنه الطيب انتهت محاولاتك')
+        if limit[formatted_date][id] <= 0:return await e.reply('اعذرنه الطيب انتهت محاولاتك')
         if not text.startswith('https://t.me/'):return await e.reply('ارسل رابط صالح!', buttons=back)
         chat, id = extract_channel_and_msg(text)
         if not chat or not id:return await e.reply('الرابط غير كامل!', buttons=back)
