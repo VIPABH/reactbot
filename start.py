@@ -32,29 +32,30 @@ send_msg = {}
 async def _(e):
     await is_user(e)
     await _filter(e)
+    await is_chat_in(e)
 async def is_chat_in(e):
     chat_id = str(e.chat_id)
     id = chat_info[chat_id]
     if chat in chat_info:
         not_isuser = await is_user(e, id=id, callable=True)
-        if not_isuser:
-            current_time = time.time()
-            if id not in send_msg or (current_time - send_msg[id]) >= 300:
-                send_msg[id] = current_time
-                text = f'عذرا صديقي الخدمه متوقفة \n حته تستفاد من خدمه التفاعلات لازم تكون مشترك على طول بالقنوات 🌚'
-                photo_file = None
-                if chat.photo:
-                    photo_bytes = await ABH.download_profile_photo(chat, file=bytes)
-                    if photo_bytes:
-                        photo_file = BytesIO(photo_bytes)
-                        photo_file.name = "photo.jpg"
-                if photo_file:
-                    await ABH.send_file(id, file=photo_file, caption=text, buttons=not_isuser)
-                else:
-                    await ABH.send_message(id, message=text, buttons=not_isuser)
-                raise events.StopPropagation
-        react_list = info[str(id)][chat_id].get('react', None)
-        await react(e, emojis=react_list)
+        if not  not_isuser:
+            react_list = info[str(id)][chat_id].get('react', None)
+            return await react(e, emojis=react_list)
+        current_time = time.time()
+        if id not in send_msg or (current_time - send_msg[id]) >= 300:
+            send_msg[id] = current_time
+            text = f'عذرا صديقي الخدمه متوقفة \n حته تستفاد من خدمه التفاعلات لازم تكون مشترك على طول بالقنوات 🌚'
+            photo_file = None
+            if chat.photo:
+                photo_bytes = await ABH.download_profile_photo(chat, file=bytes)
+                if photo_bytes:
+                    photo_file = BytesIO(photo_bytes)
+                    photo_file.name = "photo.jpg"
+            if photo_file:
+                await ABH.send_file(id, file=photo_file, caption=text, buttons=not_isuser)
+            else:
+                await ABH.send_message(id, message=text, buttons=not_isuser)
+            raise events.StopPropagation
 @ABH.on(events.CallbackQuery)
 async def _(e):
     await is_user(e)
