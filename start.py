@@ -40,7 +40,7 @@ def buttons(e):
     if id not in info or not info[id].values():
         b = [
             Button.inline('اضف قناة', data='add_channle', style=green, icon=5222040745665379997), 
-            Button.inline(f'رياكت ( 3\{limit.get(e.sender_id, 3)} )', data='react', style=green if limit[formatted_date][id] >= 1 else red, icon=5884106131822875141), 
+            Button.inline(f'رياكت ( 3\\{limit.get(e.sender_id, 3)} )', data='react', style=green if limit[formatted_date][id] >= 1 else red, icon=5884106131822875141), 
         ]
     else:
         b = [
@@ -48,7 +48,7 @@ def buttons(e):
             Button.inline('حذف قناة', data='del_channle', style=red, icon=5408832111773757273),
             Button.inline('القنوات المضافة', data='list_channles', style=blue, icon=6323116093724428158),
             Button.inline('الاعدادات', data='settings', style=green, icon=5258096772776991776),
-            Button.inline(f'رياكت ( 3\{limit.get(e.sender_id, 3)} )', data='react', style=green if limit[formatted_date][id] >= 1 else red, icon=5884106131822875141), 
+            Button.inline(f'رياكت ( 3\\{limit.get(e.sender_id, 3)} )', data='react', style=green if limit[formatted_date][id] >= 1 else red, icon=5884106131822875141), 
             ]
     return chunk_list(b)
 session = {}
@@ -281,7 +281,7 @@ async def _filter(e):
         label = "التفاعلات" if step == 'react_count' else "المشاهدات"
         return await e.reply(f'تم تحديد عدد {label} المطلوبة ( `{text}` )', buttons=back)
     elif step == 'react':
-        if limit[formatted_date][id] >= 0:return await e.edit('اعذرنه الطيب انتهت محاولاتك')
+        if limit[formatted_date][id] >= 0:return await e.reply('اعذرنه الطيب انتهت محاولاتك')
         if not text.startswith('https://t.me/'):return await e.reply('ارسل رابط صالح!', buttons=back)
         chat, id = extract_channel_and_msg(text)
         if not chat or not id:return await e.reply('الرابط غير كامل!', buttons=back)
