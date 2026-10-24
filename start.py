@@ -5,24 +5,56 @@ from telethon.tl.types import ChannelParticipantAdmin
 from telethon.errors import UserNotParticipantError
 from telethon.tl.types import ReactionEmoji
 from telethon.tl.types import Channel
-import asyncio, random, re, os
+import asyncio, random, re, os, time
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from io import BytesIO
 from helpers import *
 from client import *
 info = create('data.json')
-def save_data():
+chat_info = create('chat_info.json')
+def save_data(all=None):
     try:
         with open('data.json', 'w', encoding='utf-8') as f:
             json.dump(info, f, ensure_ascii=False, indent=4)
         return True
     except Exception as e:
         return False
+    if all:
+        try:
+            with open('data.json', 'w', encoding='utf-8') as f:
+                json.dump(chat_info, f, ensure_ascii=False, indent=4)
+            return True
+        except Exception as e:
+            return False
+send_msg = {}
 @ABH.on(events.NewMessage)
 async def _(e):
     await is_user(e)
     await _filter(e)
+async def is_chat_in(e):
+    chat_id = str(e.chat_id)
+    id = chat_info[chat_id]
+    if chat in chat_info:
+        not_isuser = await is_user(e, id=id, callable=True)
+        if not_isuser:
+            current_time = time.time()
+            if id not in send_msg or (current_time - send_msg[id]) >= 300:
+                send_msg[id] = current_time
+                text = f'عذرا صديقي الخدمه متوقفة \n حته تستفاد من خدمه التفاعلات لازم تكون مشترك على طول بالقنوات 🌚'
+                photo_file = None
+                if chat.photo:
+                    photo_bytes = await ABH.download_profile_photo(chat, file=bytes)
+                    if photo_bytes:
+                        photo_file = BytesIO(photo_bytes)
+                        photo_file.name = "photo.jpg"
+                if photo_file:
+                    await ABH.send_file(id, file=photo_file, caption=text, buttons=not_isuser)
+                else:
+                    await ABH.send_message(id, message=text, buttons=not_isuser)
+                raise events.StopPropagation
+        react_list = info[str(id)][chat_id].get('react', None)
+        await react(e, emojis=react_list)
 @ABH.on(events.CallbackQuery)
 async def _(e):
     await is_user(e)
@@ -210,6 +242,7 @@ async def _filter(e):
             return await e.reply('تم تجاهل الاضافة', buttons=back)
         if chan_key in info[sid]:
             return await e.reply('عذرا بس القناة هاي ضايفها انت من قبل', buttons=back)
+        if chan_key in chat_info and int(chat_info[chat.id]) != e.sender_id:return await e.reply(f'عذرا بس هاي القناة مضافة من ( {await ment(int(chat_info[chat.id]))} )')
         try:
             bot_user = await ABH.get_me()
             participant = await ABH(GetParticipantRequest(
@@ -232,7 +265,8 @@ async def _filter(e):
             'text': text,
             'time': current_time,
             }
-        save_data()
+        chat_info[chat.id] = sid
+        save_data(all=True)
         caption = f'**تم اضافة القناة بنجاح🌚**\nاسم القناة: ( {chat.title} )\nايدي القناة: ( `{chat.id}` )\n مالك القناة: ( {await ment(owner)} )\n ايديه: ( `{owner.id}` )\n عدد مشتركين القناة: ( `{participants.total}` )'
         url=f'https://t.me/{chat.username}' if chat.username else f'https://t.me/c/{str(chat.id).replace("-100", "")}/1'
         caption+=f'\nالرابط ( [{chat.title}]({url}) )'
@@ -285,11 +319,11 @@ async def _filter(e):
         if not chat or not mid:return await e.reply('الرابط غير كامل!', buttons=back)
         if 'temp' not in session[id]:
             session[id]['temp'] = {}
-        print(limit[formatted_date][id])
         session[id]['step'] = 'setemoji'
         session[id]['temp']['chat'] = chat
         session[id]['temp']['id'] = mid
         await try_forward(e, chat=chat, id=id)
+        del session[id]
         return await e.reply('ارسل الان التفاعلات المطلوبة')
     elif step == 'setemoji':
         valid_emojis = []
@@ -313,6 +347,6 @@ async def _filter(e):
             limit[formatted_date][id] -= 1
         if 'temp' in session[id]:
             del session[id]['temp']
-        print(limit[formatted_date][id])
+        del session[id]
         return await status_msg.edit(caption)
 ABH.run_until_disconnected()
