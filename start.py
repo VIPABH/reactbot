@@ -236,9 +236,9 @@ async def _filter(e):
         chat = await ABH.get_entity(target)        
         if not isinstance(chat, Channel) or not chat.broadcast:
             return await e.reply('صديقي اتفقنه تضيف قناة مو شيء اخر!', buttons=back)
-        _chan_key = str(chat.id)
-        if '-100' in _chan_key:
-            chan_key = _chan_key.replace('-100', '')
+        chan_key = str(chat.id)
+        if '-100' in chan_key:
+            chan_key = chan_key.replace('-100', '')
         if not isinstance(info.get(sid), dict):
             info[sid] = {}
         if step == 'del_channle':
