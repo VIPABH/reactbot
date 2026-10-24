@@ -312,7 +312,7 @@ async def _filter(e):
         if status[0]>0:
             limit[formatted_date][id] -= 1
         if uninvailde:
-            caption+=f'\nتم تخطي الايموجيات التالية ( {", ".join(uninvailde)} )'
+            caption+=f'\nتم تخطي الايموجيات التالية ( {"و ".join(uninvailde)} )'
         if 'temp' in session[id]:
             del session[id]['temp']
         return await status_msg.edit(caption)
