@@ -218,6 +218,27 @@ async def react(event, chat=None, id=None, emojis=None):
             status[1] += 1
         await asyncio.sleep(1)
     return status
+async def try_forward(event, r=None, chat=None, id=None, to=None, drop_author=None):
+    if id:
+        msg = id
+    elif r:
+        msg = r.id
+    else:
+        msg = event.id
+    from_peer = chat if chat else event.chat_id
+    target_chat = e.sender_id
+    if not target_chat: 
+        return False        
+    try:
+        await ABH.forward_messages(
+            entity=int(chat),
+            messages=int(msg),
+            from_peer=int(from_peer),
+            drop_author=drop_author
+        )
+        return True
+    except Exception as e:
+        return False
 limit = {}
 async def _filter(e):
     text = e.text
