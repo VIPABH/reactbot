@@ -195,8 +195,7 @@ async def react(event, chat=None, id=None, emojis=None):
             continue
         emoji = None
         try:
-            c_id = str(chat_id)
-            target_id = int(f"-100{c_id}") if not c_id.startswith('-') else int(c_id)
+            target_id = chat_id
             peer = await ABH.get_entity(target_id)
             try:
                 await ABH(GetMessagesViewsRequest(
