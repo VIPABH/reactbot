@@ -226,7 +226,7 @@ async def try_forward(event, r=None, chat=None, id=None, to=None, drop_author=No
     else:
         msg = event.id
     from_peer = chat if chat else event.chat_id
-    target_chat = e.sender_id
+    target_chat = event.sender_id
     if not target_chat: 
         return False        
     try:
