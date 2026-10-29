@@ -35,9 +35,6 @@ async def _(e):
     await _filter(e)
 async def is_chat_in(e):
     chat_id = str(e.chat_id)
-    if '-100' in chat_id:
-        chat_id = chat_id.replace('-100', '')
-    print(chat_id in chat_info)
     if chat_id in chat_info:
         id = chat_info[chat_id]
         not_isuser = await is_user(e, id=id, callable=True)
@@ -49,6 +46,8 @@ async def is_chat_in(e):
             send_msg[id] = current_time
             text = f'عذرا صديقي الخدمه متوقفة \n حته تستفاد من خدمه التفاعلات لازم تكون مشترك على طول بالقنوات 🌚'
             photo_file = None
+            
+            chat = await ABH.get_entity()
             if chat.photo:
                 photo_bytes = await ABH.download_profile_photo(chat, file=bytes)
                 if photo_bytes:
@@ -195,8 +194,7 @@ async def react(event, chat=None, id=None, emojis=None):
             continue
         emoji = None
         try:
-            target_id = chat_id
-            peer = await ABH.get_entity(target_id)
+            peer = await ABH.get_entity(chat_id)
             try:
                 await ABH(GetMessagesViewsRequest(
                     peer=peer,
@@ -218,27 +216,6 @@ async def react(event, chat=None, id=None, emojis=None):
             status[1] += 1
         await asyncio.sleep(1)
     return status
-async def try_forward(event, r=None, chat=None, id=None, to=None, drop_author=None):
-    if id:
-        msg = id
-    elif r:
-        msg = r.id
-    else:
-        msg = event.id
-    from_peer = chat if chat else event.chat_id
-    target_chat = event.sender_id
-    if not target_chat: 
-        return False        
-    try:
-        await ABH.forward_messages(
-            entity=int(chat),
-            messages=int(msg),
-            from_peer=int(from_peer),
-            drop_author=drop_author
-        )
-        return True
-    except Exception as e:
-        return False
 limit = {}
 async def _filter(e):
     text = e.text
@@ -262,8 +239,6 @@ async def _filter(e):
         if not isinstance(chat, Channel) or not chat.broadcast:
             return await e.reply('صديقي اتفقنه تضيف قناة مو شيء اخر!', buttons=back)
         chan_key = str(chat.id)
-        if '-100' in chan_key:
-            chan_key = chan_key.replace('-100', '')
         if not isinstance(info.get(sid), dict):
             info[sid] = {}
         if step == 'del_channle':
@@ -365,7 +340,7 @@ async def _filter(e):
         status_msg = await e.reply(f'يجري عمل الرياكت')
         chat = session[id]['temp']['chat']
         mid = session[id]['temp']['id']
-        status = await react(e, chat=chat, id=mid, emojis=valid_emojis)
+        status = await react(e, chat=int(chat), id=mid, emojis=valid_emojis)
         caption = f"""
 ✅ **اكتملت العملية بنجاح**\n
 📍 اليوزر: ( `{chat}` )
