@@ -246,7 +246,7 @@ async def react(event, chat=None, id=None, emojis=None):
         except Exception as e:
             status[1] += 1
             if 'Invalid reaction provided' in str(e):
-                status[2].append(emoji)
+                status[2].add(emoji)
     return status
 limit = {}
 async def _filter(e):
