@@ -354,4 +354,4 @@ async def _filter(e):
             del session[id]['temp']
         del session[id]
         return await status_msg.edit(caption)
-# ABH.run_until_disconnected()
+ABH.run_until_disconnected()
