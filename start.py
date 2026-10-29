@@ -22,6 +22,8 @@ def save_data(all=None):
 send_msg = {}
 @ABH.on(events.NewMessage)
 async def _(e):
+    if not ABHS:
+        await main_init()
     await is_chat_in(e)
     await is_user(e)
     await _filter(e)
@@ -354,4 +356,9 @@ async def _filter(e):
             del session[id]['temp']
         del session[id]
         return await status_msg.edit(caption)
-await ABH.run_until_disconnected()
+async def main():
+    await ABH.start(bot_token=bot_token)
+    print("تم الاتصال بنجاح، البوت يعمل الآن...")    
+    await ABH.run_until_disconnected()
+if __name__ == '__main__':
+    asyncio.run(main())
