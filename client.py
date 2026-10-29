@@ -56,7 +56,3 @@ async def main_init():
     global ABHS
     ABHS = [clients.get(session) for session in sessions if clients.get(session)]
     print(f"تم تشغيل {len(ABHS)} حساب بنجاح!")
-if __name__ == '__main__':
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main_init())
-    loop.run_until_complete(ABH.run_until_disconnected())
