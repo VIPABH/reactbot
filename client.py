@@ -4,7 +4,7 @@ api_id = int(os.getenv("API_ID"))
 api_hash = os.getenv("API_HASH")
 bot_token = os.getenv("BOT_TOKEN")
 wfffp = 1910015590
-Max = 17
+Max = 16
 ABH = TelegramClient(
     "REACTBOT",
     api_id,
@@ -30,6 +30,7 @@ for i, session in enumerate(sessions, start=1):
     api_hash_i = os.getenv(f"API_HASH{i}")
     if api_id_i and api_hash_i:
         clients[session] = TelegramClient(session, int(api_id_i), api_hash_i).start()
+        print(f"{session} is working!")
     else:
         print(f"Skipping {session} due to missing environment variables.")
 ABHS = [clients.get(session) for session in sessions]
