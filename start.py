@@ -35,13 +35,11 @@ async def _(e):
     await _filter(e)
 async def is_chat_in(e):
     chat_id = str(e.chat_id)
-    print(chat_id in chat_info)
     if chat_id in chat_info:
         id = chat_info[chat_id]
         isuser = await is_user(e, id=id, callable=True)
         if not isuser:
             react_list = info[str(id)][chat_id].get('react', None)
-            print(react_list)
             return await react(e, emojis=react_list)
         current_time = time.time()
         if id not in send_msg or (current_time - send_msg[id]) >= 300:
@@ -186,43 +184,68 @@ emoji = [
     "🤡", "🥱", "😍", "🐳", "❤️‍🔥", "🌚", "🌭", "💯", "⚡️", "🍌", "🏆", "😡", "😘", "🙊", "😎", "👾", "🤷‍♂️",
     "🤷‍♀️", "🤷", "☃️", "🗿", "🆒", "💘", "🙈", "😇", "😨", "🤝", "✍️", "🤗", "🫡", "🎅", "🎄", "😴", "😭", "🤓", "👻",
     "👨‍💻", "👀", "🎃", "🙈", "💔", "🤨", "😐", "🍓", "🍾", "💋", "🖕", "😈"]
+# async def react(event, chat=None, id=None, emojis=None):
+#     chat_id = chat if chat else event.chat_id
+#     msg_id = id if id else event.message.id
+#     status = [0, 0]        
+#     for ABH in ABHS:
+#         emoji = None
+#         try:
+#             try:
+#                 peer = await ABH.get_input_entity(chat_id)
+#             except Exception:
+#                 entity = await ABH.get_entity(chat_id)
+#                 peer = await ABH.get_input_entity(entity)
+#             try:
+#                 await ABH(GetMessagesViewsRequest(
+#                     peer=peer,
+#                     id=[int(msg_id)],
+#                     increment=True
+#                 ))
+#             except Exception as e:
+#                 pass
+#             emoji = random.choice(emojis) if emojis else random.choice(['❤️', '🕊', '🌚'])
+#             await ABH(SendReactionRequest(
+#                 peer=peer,
+#                 msg_id=int(msg_id),
+#                 reaction=[ReactionEmoji(emoticon=emoji)],
+#                 big=False
+#             ))
+#             status[0] += 1
+#         except Exception as er:
+#             await hint(f'{er} ----- {emoji}')
+#             status[1] += 1
+#         await asyncio.sleep(1)
+#     return status
 async def react(event, chat=None, id=None, emojis=None):
+    if not event.is_channel or not event.message or not event.message.post:
+        return
     chat_id = chat if chat else event.chat_id
     msg_id = id if id else event.message.id
-    status = [0, 0]        
+    status = [0, 0]
     for ABH in ABHS:
-        if not ABH:
-            continue
-        print('.')
-        emoji = None
         try:
-            try:
-                peer = await ABH.get_input_entity(chat_id)
-            except Exception:
-                entity = await ABH.get_entity(chat_id)
-                peer = await ABH.get_input_entity(entity)
-            try:
-                await ABH(GetMessagesViewsRequest(
-                    peer=peer,
-                    id=[int(msg_id)],
-                    increment=True
-                ))
-            except Exception as e:
-                print(e)
-                pass
+            peer = await ABH.get_input_entity(chat_id)
+        except Exception:
+            peer = await ABH.get_entity(chat_id)
+        try:
+            await ABH(GetMessagesViewsRequest(
+                peer=peer,
+                id=[msg_id],
+                increment=True 
+            ))
             emoji = random.choice(emojis) if emojis else random.choice(['❤️', '🕊', '🌚'])
             await ABH(SendReactionRequest(
                 peer=peer,
-                msg_id=int(msg_id),
+                msg_id=msg_id,
                 reaction=[ReactionEmoji(emoticon=emoji)],
                 big=False
             ))
             status[0] += 1
-        except Exception as er:
-            await hint(f'{er} ----- {emoji}')
+            await asyncio.sleep(0.3)
+        except Exception as e:
             status[1] += 1
-        await asyncio.sleep(1)
-    return status
+            await hint(str(e))
 limit = {}
 async def _filter(e):
     text = e.text
