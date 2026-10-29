@@ -220,6 +220,7 @@ emoji = [
 async def react(event, chat=None, id=None, emojis=None):
     chat_id = chat if chat else event.chat_id
     msg_id = id if id else event.message.id
+    print_all()
     status = [0, 0]
     for ABH in ABHS:
         try:
