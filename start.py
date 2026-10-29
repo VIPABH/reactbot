@@ -358,7 +358,7 @@ async def _filter(e):
         session[id]['step'] = 'setemoji'
         session[id]['temp']['chat'] = chat
         session[id]['temp']['id'] = mid
-        await try_forward(e, chat=chat, id=mid)
+        await try_forward(e, chat=int(chat) if chat.isdigit() else chat, id=mid, to=e.sender_id)
         return await e.reply('ارسل الان التفاعلات المطلوبة')
     elif step == 'setemoji':
         valid_emojis = []
