@@ -63,16 +63,17 @@ async def _(e):
 back = [Button.inline('الرجوع', data='back', style=blue, icon=5352759161945867747)]
 def buttons(e):
     id = str(e.sender_id)
+    iid = e.sender_id
     formatted_date = datetime.now().strftime("%Y %m %d")
     if formatted_date not in limit:
         limit[formatted_date] = {}
-    if id not in limit[formatted_date]:
-        limit[formatted_date][id] = 3
-    tries = limit[formatted_date][e.sender_id]
+    if iid not in limit[formatted_date]:
+        limit[formatted_date][iid] = 3
+    tries = limit[formatted_date][iid]
     if id not in info or not info[id].values():
         b = [
             Button.inline('اضف قناة', data='add_channle', style=green, icon=5222040745665379997), 
-            Button.inline(f'رياكت ( 3\\{tries} )', data='react', style=green if limit[formatted_date][id] >= 1 else red, icon=5884106131822875141), 
+            Button.inline(f'رياكت ( 3\\{tries} )', data='react', style=green if limit[formatted_date][iid] >= 1 else red, icon=5884106131822875141), 
         ]
     else:
         b = [
@@ -80,7 +81,7 @@ def buttons(e):
             Button.inline('حذف قناة', data='del_channle', style=red, icon=5408832111773757273),
             Button.inline('القنوات المضافة', data='list_channles', style=blue, icon=6323116093724428158),
             Button.inline('الاعدادات', data='settings', style=green, icon=5258096772776991776),
-            Button.inline(f'رياكت ( 3\\{tries} )', data='react', style=green if limit[formatted_date][id] >= 1 else red, icon=5884106131822875141), 
+            Button.inline(f'رياكت ( 3\\{tries} )', data='react', style=green if limit[formatted_date][iid] >= 1 else red, icon=5884106131822875141), 
             ]
     return chunk_list(b)
 session = {}
