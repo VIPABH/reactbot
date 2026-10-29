@@ -4,7 +4,7 @@ api_id = int(os.getenv("API_ID"))
 api_hash = os.getenv("API_HASH")
 bot_token = os.getenv("BOT_TOKEN")
 wfffp = 1910015590
-Max = 15
+Max = 16
 ABH = TelegramClient(
     "REACTBOT",
     api_id,
@@ -13,44 +13,50 @@ ABH = TelegramClient(
     sequential_updates=False,
     auto_reconnect=True,
     connection_retries=None
-).start(bot_token=bot_token)
+)
 r = redis.Redis(
     host="localhost",
     port=6379,
     db=0,
     decode_responses=True
 )
-api_id = int(os.getenv("API_ID"))
-api_hash = os.getenv("API_HASH")
-bot_token = os.getenv("bot_token")
 clients = {}
 sessions = [f'code{num}' for num in range(1, Max+1)]
-for i, session in enumerate(sessions, start=1):
-    api_id_i = os.getenv(f"API_ID{i}")
-    api_hash_i = os.getenv(f"API_HASH{i}")
-    if api_id_i and api_hash_i:
-        print(f"Starting {session}...")
-        clients[session] = TelegramClient(session, int(api_id_i), api_hash_i).start()
-        print(f"{session} is working!")
-    else:
-        print(f"Skipping {session} due to missing environment variables.")
-ABHS = [clients.get(f'code{num}') for num in range(1, Max)]
-async def run_cmd(command: str):
-    process = await asyncio.create_subprocess_shell(
-        command,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE
-    )
-    stdout, stderr = await process.communicate()
-    return stdout.decode().strip(), stderr.decode().strip(), process.returncode
-@ABH.on(events.NewMessage(pattern="^(تحديث|up)$", from_users=[1910015590]))
-async def update_repo(event):
+async def start_single_client(session, api_id_i, api_hash_i):
     try:
-        stdout, stderr, code = await run_cmd("git pull")
-        if code == 0:
-            await event.reply(f" تم تحديث السورس بنجاح\n\n{stdout or 'لا توجد تحديثات'}")
-            os.execv(sys.executable, [sys.executable, os.path.abspath("config.py")])
-        else:
-            await hint(f" حدث خطأ أثناء التحديث:\n\n{stderr}")
+        client = TelegramClient(
+            session, 
+            int(api_id_i), 
+            api_hash_i,
+            connection=connection.ConnectionTcpFull,
+            sequential_updates=False,
+            auto_reconnect=True,
+            connection_retries=None
+        )
+        await client.start()
+        return session, client
     except Exception as e:
-        await e.reply(f"⚠️ خطأ غير متوقع:\n\n{e}")
+        print(f"Skipping {session} due to error: {e}")
+        return session, None
+async def main_init():
+    await ABH.start(bot_token=bot_token)
+    tasks = []
+    for i, session in enumerate(sessions, start=1):
+        api_id_i = os.getenv(f"API_ID{i}")
+        api_hash_i = os.getenv(f"API_HASH{i}")
+        if api_id_i and api_hash_i:
+            tasks.append(start_single_client(session, api_id_i, api_hash_i))
+        else:
+            print(f"Skipping {session} due to missing environment variables.")
+    if tasks:
+        results = await asyncio.gather(*tasks)
+        for session, client in results:
+            if client:
+                clients[session] = client
+    global ABHS
+    ABHS = [clients.get(session) for session in sessions if clients.get(session)]
+    print(f"تم تشغيل {len(ABHS)} حساب بنجاح!")
+if __name__ == '__main__':
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main_init())
+    loop.run_until_complete(ABH.run_until_disconnected())
