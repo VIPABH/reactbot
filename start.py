@@ -46,7 +46,6 @@ async def is_chat_in(e):
             send_msg[id] = current_time
             text = f'عذرا صديقي الخدمه متوقفة \n حته تستفاد من خدمه التفاعلات لازم تكون مشترك على طول بالقنوات 🌚'
             photo_file = None
-            print(e.chat_id)
             chat = await ABH.get_entity(e.chat_id)
             if chat.photo:
                 photo_bytes = await ABH.download_profile_photo(chat, file=bytes)
@@ -194,6 +193,7 @@ async def react(event, chat=None, id=None, emojis=None):
             continue
         emoji = None
         try:
+            print(e.chat_id)
             peer = await ABH.get_entity(chat_id)
             try:
                 await ABH(GetMessagesViewsRequest(
