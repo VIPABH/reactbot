@@ -193,7 +193,7 @@ async def react(event, chat=None, id=None, emojis=None):
             continue
         emoji = None
         try:
-            print(e.chat_id)
+            print(event.chat_id)
             peer = await ABH.get_entity(chat_id)
             try:
                 await ABH(GetMessagesViewsRequest(
