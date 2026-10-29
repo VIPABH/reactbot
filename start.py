@@ -155,7 +155,7 @@ async def _(e):
             [Button.inline('عدد المشاهدات', data=f'view_count:{chat}', style=green, icon=5226513232549664618),
             Button.inline('عدد التفاعلات', data=f'react_count:{chat}', style=green, icon=5226513232549664618)]
         ]
-        button.append([Button.inline('حذف القناة', data=f'delete:{chat.id}', style=red, icon=5258130763148172425)])
+        button.append([Button.inline('حذف القناة', data=f'delete:{chat}', style=red, icon=5258130763148172425)])
         button.append(back)
         await e.edit('اختر ما تريد تحديده', buttons=button)
     elif arg in ('view_count', 'react_count'):
