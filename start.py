@@ -187,14 +187,17 @@ emoji = [
 async def react(event, chat=None, id=None, emojis=None):
     chat_id = chat if chat else event.chat_id
     msg_id = id if id else event.message.id
-    status = [0, 0]    
+    status = [0, 0]        
     for ABH in ABHS:
         if not ABH:
             continue
         emoji = None
         try:
-            print(event.chat_id)
-            peer = await ABH.get_entity(chat_id)
+            try:
+                peer = await ABH.get_input_entity(chat_id)
+            except Exception:
+                entity = await ABH.get_entity(chat_id)
+                peer = await ABH.get_input_entity(entity)
             try:
                 await ABH(GetMessagesViewsRequest(
                     peer=peer,
