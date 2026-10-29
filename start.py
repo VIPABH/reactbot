@@ -119,6 +119,7 @@ async def start_callback(e):
         chats = await ABH.get_entity(ids)
         b = [Button.inline(chat.title, data=f'channle:{chat.id}', style=green, icon=5258096772776991776) for chat in chats]
         button = chunk_list(b)
+        button.append([Button.inline('حذف القناة', data=f'delete:{chat.id}', style=red, icon=5258130763148172425)])
         button.append(back)
         return await e.edit('اختر قناة لتعديل اعداداتها', buttons=button)
     elif data == 'add_channle':
