@@ -185,43 +185,9 @@ emoji = [
     "🤡", "🥱", "😍", "🐳", "❤️‍🔥", "🌚", "🌭", "💯", "⚡️", "🍌", "🏆", "😡", "😘", "🙊", "😎", "👾", "🤷‍♂️",
     "🤷‍♀️", "🤷", "☃️", "🗿", "🆒", "💘", "🙈", "😇", "😨", "🤝", "✍️", "🤗", "🫡", "🎅", "🎄", "😴", "😭", "🤓", "👻",
     "👨‍💻", "👀", "🎃", "🙈", "💔", "🤨", "😐", "🍓", "🍾", "💋", "🖕", "😈"]
-# async def react(event, chat=None, id=None, emojis=None):
-#     chat_id = chat if chat else event.chat_id
-#     msg_id = id if id else event.message.id
-#     status = [0, 0]        
-#     for ABH in ABHS:
-#         emoji = None
-#         try:
-#             try:
-#                 peer = await ABH.get_input_entity(chat_id)
-#             except Exception:
-#                 entity = await ABH.get_entity(chat_id)
-#                 peer = await ABH.get_input_entity(entity)
-#             try:
-#                 await ABH(GetMessagesViewsRequest(
-#                     peer=peer,
-#                     id=[int(msg_id)],
-#                     increment=True
-#                 ))
-#             except Exception as e:
-#                 pass
-#             emoji = random.choice(emojis) if emojis else random.choice(['❤️', '🕊', '🌚'])
-#             await ABH(SendReactionRequest(
-#                 peer=peer,
-#                 msg_id=int(msg_id),
-#                 reaction=[ReactionEmoji(emoticon=emoji)],
-#                 big=False
-#             ))
-#             status[0] += 1
-#         except Exception as er:
-#             await hint(f'{er} ----- {emoji}')
-#             status[1] += 1
-#         await asyncio.sleep(1)
-#     return status
 async def react(event, chat=None, id=None, emojis=None):
     chat_id = chat if chat else event.chat_id
     msg_id = id if id else event.message.id
-    print_all()
     status = [0, 0, set()]
     for ABH in ABHS:
         try:
@@ -272,6 +238,8 @@ async def _filter(e):
         if not isinstance(chat, Channel) or not chat.broadcast:
             return await e.reply('صديقي اتفقنه تضيف قناة مو شيء اخر!', buttons=back)
         chan_key = str(chat.id)
+        if not chan_key.startswith('-100'):
+            chan_key = '-100'+chan_key
         if not isinstance(info.get(sid), dict):
             info[sid] = {}
         if step == 'del_channle':
@@ -303,7 +271,7 @@ async def _filter(e):
             'text': text,
             'time': current_time,
             }
-        chat_info[chan_key] = sid
+        chat_info[chan_key] = id
         save_data(all=True)
         caption = f'**تم اضافة القناة بنجاح🌚**\nاسم القناة: ( {chat.title} )\nايدي القناة: ( `{chat.id}` )\n مالك القناة: ( {await ment(owner)} )\n ايديه: ( `{owner.id}` )\n عدد مشتركين القناة: ( `{participants.total}` )'
         url=f'https://t.me/{chat.username}' if chat.username else f'https://t.me/c/{str(chat.id).replace("-100", "")}/1'
