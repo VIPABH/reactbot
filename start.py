@@ -309,7 +309,7 @@ async def _filter(e):
         if not text.isdigit():
             return await e.reply('ارسل رقم صالح!', buttons=back)
         num = int(text)
-        if num < 1 or num > 15:return await e.reply('عذرا صديقي بس العدد لازم يكون بين (1-15 )', buttons=back)
+        if num < 1 or num > Max:return await e.reply(f'عذرا صديقي بس العدد لازم يكون بين (1-{Max} )', buttons=back)
         info[sid][chat_id][step] = num
         save_data()
         if id in session:
