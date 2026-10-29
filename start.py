@@ -248,6 +248,7 @@ async def react(event, chat=None, id=None, emojis=None):
             await hint(str(e))
 limit = {}
 async def _filter(e):
+    if not e.is_private:return
     text = e.text
     id = e.sender_id
     sid = str(e.sender_id)
@@ -357,8 +358,7 @@ async def _filter(e):
         session[id]['step'] = 'setemoji'
         session[id]['temp']['chat'] = chat
         session[id]['temp']['id'] = mid
-        await try_forward(e, chat=chat, id=id)
-        del session[id]
+        await try_forward(e, chat=chat, id=mid)
         return await e.reply('ارسل الان التفاعلات المطلوبة')
     elif step == 'setemoji':
         valid_emojis = []
