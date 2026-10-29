@@ -68,7 +68,7 @@ def buttons(e):
         limit[formatted_date] = {}
     if id not in limit[formatted_date]:
         limit[formatted_date][id] = 3
-    tries = limit[formatted_date][id]
+    tries = limit[formatted_date][e.sender_id]
     if id not in info or not info[id].values():
         b = [
             Button.inline('اضف قناة', data='add_channle', style=green, icon=5222040745665379997), 
@@ -221,7 +221,7 @@ async def react(event, chat=None, id=None, emojis=None):
     chat_id = chat if chat else event.chat_id
     msg_id = id if id else event.message.id
     print_all()
-    status = [0, 0]
+    status = [0, 0, []]
     for ABH in ABHS:
         try:
             peer = await ABH.get_input_entity(chat_id)
@@ -244,7 +244,8 @@ async def react(event, chat=None, id=None, emojis=None):
             await asyncio.sleep(0.3)
         except Exception as e:
             status[1] += 1
-            await hint(str(e))
+            if 'Invalid reaction provided' in e:
+                status[2].append(emoji)
     return status
 limit = {}
 async def _filter(e):
@@ -379,6 +380,8 @@ async def _filter(e):
 """
         if status[1]>0:
             caption+= f'\n❌ التفاعلات الفاشلة: ( `{status[1]}` )'
+        if status[2]:
+            caption+= f'\n❌ ايموجيات مقفولة في القناة: ( {'و '.join(status[2])} )'
         if status[0]>0:
             limit[formatted_date][id] -= 1
         if 'temp' in session[id]:
