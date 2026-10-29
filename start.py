@@ -354,4 +354,10 @@ async def _filter(e):
             del session[id]['temp']
         del session[id]
         return await status_msg.edit(caption)
-ABH.run_until_disconnected()
+async def main():
+    print("جاري الاتصال بتليجرام...")
+    await ABH.start(bot_token=bot_token)
+    print("تم الاتصال بنجاح، البوت يعمل الآن...")
+    await ABH.run_until_disconnected()
+if __name__ == '__main__':
+    asyncio.run(main())
