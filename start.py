@@ -88,6 +88,8 @@ async def start_callback(e):
         session[e.sender_id] = {}
     data = e.data.decode('utf-8')
     if data == 'back':
+        if session.get(id):
+            del session[id]
         return await e.edit('تفضل الازرار كدامك', buttons=buttons(e))
     elif data == 'del_channle':
         if not info.get(str(id)):return await e.edit('ماعندك قنوات مضافة', buttons=back)
