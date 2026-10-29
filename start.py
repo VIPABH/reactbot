@@ -139,6 +139,8 @@ async def start_callback(e):
 async def _(e):
     data = e.data.decode('utf-8')
     arg, chat = data.split(':')
+    if not chat.startswith('-100'):
+        chat = '-100'+chat
     id = str(e.sender_id)
     if not id in info:return await e.edit('عذرا بس انت ماعندك قنوات حاليا', buttons=back)
     if not chat in info[id]:return await e.edit('عذرا بس القناة هاي مو مضافة', buttons=back)
@@ -273,7 +275,6 @@ async def _filter(e):
         b = [Button.url(chat.title, url=url, style=blue, icon=5465374681915727405)]
         button = [b, back]
         del session[id]
-        print_all()
         photo_file = None
         if chat.photo:
             photo_bytes = await ABH.download_profile_photo(chat, file=bytes)
