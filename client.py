@@ -59,6 +59,4 @@ async def main_init():
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
     loop.run_until_complete(main_init())
-    # loop.run_until_complete(ABH.run_until_disconnected())
-
-ABH.run_until_disconnected()
+    loop.run_until_complete(ABH.run_until_disconnected())
