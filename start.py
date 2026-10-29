@@ -370,7 +370,7 @@ async def _filter(e):
         status_msg = await e.reply(f'يجري عمل الرياكت')
         chat = session[id]['temp']['chat']
         mid = session[id]['temp']['id']
-        status = await react(e, chat=int(chat), id=mid, emojis=valid_emojis)
+        status = await react(e, chat=int(chat) if chat.isdigit() else chat, id=mid, emojis=valid_emojis)
         caption = f"""
 ✅ **اكتملت العملية بنجاح**\n
 📍 اليوزر: ( `{chat}` )
