@@ -218,8 +218,6 @@ emoji = [
 #         await asyncio.sleep(1)
 #     return status
 async def react(event, chat=None, id=None, emojis=None):
-    if not event.is_channel or not event.message or not event.message.post:
-        return
     chat_id = chat if chat else event.chat_id
     msg_id = id if id else event.message.id
     status = [0, 0]
@@ -375,7 +373,8 @@ async def _filter(e):
 ✅ **اكتملت العملية بنجاح**\n
 📍 اليوزر: ( `{chat}` )
 👥 الحسابات المشاركة: ( `{len(ABHS)}` )
-🔥 التفاعلات الناجحة: ( `{status[0]}` )"""
+🔥 التفاعلات الناجحة: ( `{status[0]}` )
+"""
         if status[1]>0:
             caption+= f'\n❌ التفاعلات الفاشلة: ( `{status[1]}` )'
         if status[0]>0:
