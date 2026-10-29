@@ -245,6 +245,7 @@ async def react(event, chat=None, id=None, emojis=None):
         except Exception as e:
             status[1] += 1
             await hint(str(e))
+    return status
 limit = {}
 async def _filter(e):
     if not e.is_private:return
