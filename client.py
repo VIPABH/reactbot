@@ -34,23 +34,7 @@ for i, session in enumerate(sessions, start=1):
         print(f"{session} is working!")
     else:
         print(f"Skipping {session} due to missing environment variables.")
-ABH1 = clients.get("code1")
-ABH2 = clients.get("code2")
-# ABH3 = clients.get("code3")
-# ABH4 = clients.get("code4")
-# ABH5 = clients.get("code5")
-# ABH6 = clients.get("code6")
-# ABH7 = clients.get("code7")
-# ABH8 = clients.get("code8")
-# ABH9 = clients.get("code9")
-# ABH10 = clients.get("code10")
-# ABH11 = clients.get("code11")
-# ABH12 = clients.get("code12")
-# ABH13 = clients.get("code13")
-# ABH14 = clients.get("code14")
-# ABH15 = clients.get("code15")
-# ABHS = [ABH1, ABH2, ABH3, ABH4, ABH5, ABH6, ABH7, ABH8, ABH9, ABH10, ABH11, ABH12, ABH13, ABH14, ABH15]
-ABHS = [ABH1, ABH2]
+ABHS = [clients.get(f'code{num}') for num in range(1, Max)]
 async def run_cmd(command: str):
     process = await asyncio.create_subprocess_shell(
         command,
