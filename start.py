@@ -230,13 +230,13 @@ async def react(event, chat=None, id=None, emojis=None):
         try:
             await ABH(GetMessagesViewsRequest(
                 peer=peer,
-                id=[msg_id],
+                id=[int(msg_id)],
                 increment=True 
             ))
             emoji = random.choice(emojis) if emojis else random.choice(['❤️', '🕊', '🌚'])
             await ABH(SendReactionRequest(
                 peer=peer,
-                msg_id=msg_id,
+                msg_id=int(msg_id),
                 reaction=[ReactionEmoji(emoticon=emoji)],
                 big=False
             ))
