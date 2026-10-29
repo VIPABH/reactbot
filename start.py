@@ -186,30 +186,61 @@ async def react(event, chat=None, id=None, emojis=None):
     chat_id = chat if chat else event.chat_id
     msg_id = id if id else event.message.id
     status = [0, 0, set()]
-    for ABH in ABHS:
+    views = 0
+    reacts = 0
+    sender_id = str(event.sender_id) if hasattr(event, 'sender_id') else str(event.chat_id)
+    try:
+        user_data = info.get(sender_id, {}).get(chat_id, {})
+        rdb = user_data.get('react_count', 0)
+        vdb = user_data.get('view_count', 0)
+    except Exception:
+        rdb = 0
+        vdb = 0
+    for ABH_client in ABHS:
         try:
-            peer = await ABH.get_input_entity(chat_id)
+            peer = await ABH_client.get_input_entity(chat_id)
         except Exception:
-            peer = await ABH.get_entity(chat_id)
+            try:
+                peer = await ABH_client.get_entity(chat_id)
+            except Exception:
+                continue
         try:
-            await ABH(GetMessagesViewsRequest(
-                peer=peer,
-                id=[int(msg_id)],
-                increment=True 
-            ))
+            if vdb and vdb > 0:
+                if views < vdb:
+                    await ABH_client(GetMessagesViewsRequest(
+                        peer=peer,
+                        id=[int(msg_id)],
+                        increment=True 
+                    ))
+                    views += 1
+            else:
+                await ABH_client(GetMessagesViewsRequest(
+                    peer=peer,
+                    id=[int(msg_id)],
+                    increment=True 
+                ))
+        except Exception:
+            pass
+        if rdb and rdb > 0:
+            can_react = reacts < rdb
+        else:
+            can_react = True
+        if can_react:
             emoji = random.choice(emojis) if emojis else random.choice(['❤️', '🕊', '🌚'])
-            await ABH(SendReactionRequest(
-                peer=peer,
-                msg_id=int(msg_id),
-                reaction=[ReactionEmoji(emoticon=emoji)],
-                big=False
-            ))
-            status[0] += 1
-            await asyncio.sleep(0.3)
-        except Exception as e:
-            status[1] += 1
-            if 'Invalid reaction provided' in str(e):
-                status[2].add(emoji)
+            try:
+                await ABH_client(SendReactionRequest(
+                    peer=peer,
+                    msg_id=int(msg_id),
+                    reaction=[ReactionEmoji(emoticon=emoji)],
+                    big=False
+                ))
+                reacts += 1
+                status[0] += 1
+                await asyncio.sleep(0.3)
+            except Exception as react_err:
+                status[1] += 1
+                if 'Invalid reaction provided' in str(react_err):
+                    status[2].add(emoji)                    
     return status
 limit = {}
 async def _filter(e):
