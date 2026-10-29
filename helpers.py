@@ -260,6 +260,7 @@ async def try_forward(event, chat=None, id=None, to=None, drop_author=None):
     id = id if id else event.id
     from_peer = chat if chat else event.chat_id
     target_chat = to if to else event.chat_id
+    print_all()
     try:
         await ABH.forward_messages(
             entity=int(target_chat),
