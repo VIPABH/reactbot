@@ -35,6 +35,7 @@ async def _(e):
     await _filter(e)
 async def is_chat_in(e):
     chat_id = str(e.chat_id)
+    print(chat_id in chat_info)
     if chat_id in chat_info:
         id = chat_info[chat_id]
         isuser = await is_user(e, id=id, callable=True)
