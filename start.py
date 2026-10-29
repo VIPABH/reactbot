@@ -14,19 +14,11 @@ from client import *
 info = create('data.json')
 chat_info = create('chat_info.json')
 def save_data(all=None):
-    try:
-        with open('data.json', 'w', encoding='utf-8') as f:
-            json.dump(info, f, ensure_ascii=False, indent=4)
-        return True
-    except Exception as e:
-        return False
+    with open('data.json', 'w', encoding='utf-8') as f:
+        json.dump(info, f, ensure_ascii=False, indent=4)        
     if all:
-        try:
-            with open('chat_info.json', 'w', encoding='utf-8') as f:
-                json.dump(chat_info, f, ensure_ascii=False, indent=4)
-            return True
-        except Exception as e:
-            return False
+        with open('chat_info.json', 'w', encoding='utf-8') as f:
+            json.dump(chat_info, f, ensure_ascii=False, indent=4)
 send_msg = {}
 @ABH.on(events.NewMessage)
 async def _(e):
