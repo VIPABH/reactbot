@@ -257,15 +257,30 @@ def ordinal_arabic_female(n):
     one_part = n % 10
     return f"{units_compound[one_part]} و{tens[ten_part]}"
 async def try_forward(event, chat=None, id=None, to=None, drop_author=None):
-    id = id if id else event.id
-    from_peer = chat if chat else event.chat_id
-    target_chat = to if to else event.chat_id
-    print_all()
+    msg_id = id if id else getattr(event, 'id', None)
+    raw_from = chat if chat else getattr(event, 'chat_id', None)
+    raw_to = to if to else getattr(event, 'chat_id', None)
     try:
+        if msg_id is not None:
+            msg_id = int(msg_id)
+        else:
+            return False
+        if isinstance(raw_from, str) and raw_from.isdigit():
+            from_peer = int(raw_from)
+        elif isinstance(raw_from, int):
+            from_peer = raw_from
+        else:
+            from_peer = await ABH.get_input_entity(raw_from)
+        if isinstance(raw_to, str) and raw_to.isdigit():
+            target_chat = int(raw_to)
+        elif isinstance(raw_to, int):
+            target_chat = raw_to
+        else:
+            target_chat = await ABH.get_input_entity(raw_to)
         await ABH.forward_messages(
-            entity=int(target_chat),
-            messages=int(id),
-            from_peer=int(from_peer),
+            entity=target_chat,
+            messages=msg_id,
+            from_peer=from_peer,
             drop_author=drop_author
         )
         return True
