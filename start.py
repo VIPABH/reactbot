@@ -279,6 +279,7 @@ async def _filter(e):
         b = [Button.url(chat.title, url=url, style=blue, icon=5465374681915727405)]
         button = [b, back]
         del session[id]
+        print_all()
         photo_file = None
         if chat.photo:
             photo_bytes = await ABH.download_profile_photo(chat, file=bytes)
