@@ -191,6 +191,7 @@ async def react(event, chat=None, id=None, emojis=None):
     for ABH in ABHS:
         if not ABH:
             continue
+        print('.')
         emoji = None
         try:
             try:
@@ -204,7 +205,8 @@ async def react(event, chat=None, id=None, emojis=None):
                     id=[int(msg_id)],
                     increment=True
                 ))
-            except Exception:
+            except Exception as e:
+                print(e)
                 pass
             emoji = random.choice(emojis) if emojis else random.choice(['❤️', '🕊', '🌚'])
             await ABH(SendReactionRequest(
