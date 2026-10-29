@@ -245,7 +245,7 @@ async def react(event, chat=None, id=None, emojis=None):
             await asyncio.sleep(0.3)
         except Exception as e:
             status[1] += 1
-            if 'Invalid reaction provided' in e:
+            if 'Invalid reaction provided' in str(e):
                 status[2].append(emoji)
     return status
 limit = {}
