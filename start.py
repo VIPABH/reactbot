@@ -16,7 +16,7 @@ info = create('data.json')
 chat_info = create('chat_info.json')
 def save_data(all=None):
     with open('data.json', 'w', encoding='utf-8') as f:
-        json.dump(info, f, ensure_ascii=False, indent=4)        
+        json.dump(info, f, ensure_ascii=False, indent=4)
     if all:
         with open('chat_info.json', 'w', encoding='utf-8') as f:
             json.dump(chat_info, f, ensure_ascii=False, indent=4)
@@ -183,7 +183,7 @@ emoji = [
     "🤡", "🥱", "😍", "🐳", "❤️‍🔥", "🌚", "🌭", "💯", "⚡️", "🍌", "🏆", "😡", "😘", "🙊", "😎", "👾", "🤷‍♂️",
     "🤷‍♀️", "🤷", "☃️", "🗿", "🆒", "💘", "🙈", "😇", "😨", "🤝", "✍️", "🤗", "🫡", "🎅", "🎄", "😴", "😭", "🤓", "👻",
     "👨‍💻", "👀", "🎃", "🙈", "💔", "🤨", "😐", "🍓", "🍾", "💋", "🖕", "😈"]
-async def react(event, chat=None, id=None, emojis=None, random=False):
+async def react(event, chat=None, id=None, emojis=None):
     chat_id = chat if chat else event.chat_id
     msg_id = id if id else event.message.id
     status = [0, 0, set()]
