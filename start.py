@@ -65,17 +65,18 @@ def buttons(e):
     tries = limit[formatted_date][iid]
     if id not in info or not info[id].values():
         b = [
-            Button.inline('اضف قناة', data='add_channle', style=green, icon=5222040745665379997),
-            Button.inline(f'رياكت ( 3\\{tries} )', data='react', style=green, icon=5884106131822875141)]
-
+            Button.inline('اضف قناة', data='add_channle', style=green, icon=5222040745665379997)]
+        if tries > 0:
+            b.append(Button.inline(f'رياكت ( 3\\{tries} )', data='react', style=green, icon=5884106131822875141))
     else:
         b = [
             Button.inline('اضف قناة', data='add_channle', style=blue, icon=5222040745665379997),
             Button.inline('حذف قناة', data='del_channle', style=red, icon=5408832111773757273),
             Button.inline('القنوات المضافة', data='list_channles', style=blue, icon=6323116093724428158),
             Button.inline('الاعدادات', data='settings', style=green, icon=5258096772776991776),
-            Button.inline(f'رياكت ( 3\\{tries} )', data='react', style=green, icon=5884106131822875141)
             ]
+        if tries > 0:
+            b.append(Button.inline(f'رياكت ( 3\\{tries} )', data='react', style=green, icon=5884106131822875141))
     return chunk_list(b)
 session = {}
 @ABH.on(events.NewMessage(pattern=r'^/start$'))
@@ -183,18 +184,19 @@ emoji = [
     "🤷‍♀️", "🤷", "☃️", "🗿", "🆒", "💘", "🙈", "😇", "😨", "🤝", "✍️", "🤗", "🫡", "🎅", "🎄", "😴", "😭", "🤓", "👻",
     "👨‍💻", "👀", "🎃", "🙈", "💔", "🤨", "😐", "🍓", "🍾", "💋", "🖕", "😈"]
 async def react(event, chat=None, id=None, emojis=None):
-    chat_id = chat if chat else event.chat_id
+    chat_id = chat if chat else str(event.chat_id)
     msg_id = id if id else event.message.id
     status = [0, 0, set()]
     views = 0
     reacts = 0
-    rdb = info[str(event.sender_id)][str(chat_id)].get('react_count', Max)
-    vdb = info[str(event.sender_id)][str(chat_id)].get('view_count', Max)
+    print(str(event.sender_id) in info, chat_id in info[str(event.sender_id)])
+    rdb = info[str(event.sender_id)][chat_id].get('react_count', Max)
+    vdb = info[str(event.sender_id)][chat_id].get('view_count', Max)
     for ABH in ABHS:
         try:
-            peer = await ABH.get_input_entity(chat_id)
+            peer = await ABH.get_input_entity(int(chat_id))
         except Exception:
-            peer = await ABH.get_entity(chat_id)
+            peer = await ABH.get_entity(int(chat_id))
         if not views >= vdb:
             await ABH(GetMessagesViewsRequest(
                 peer=peer,
@@ -247,12 +249,13 @@ async def random_react(event, chat=None, id=None, emojis=None):
                 big=False
             ))
             status[0] += 1
-            limit[formatted_date][event.sender_id] -= 1
             await asyncio.sleep(0.3)
         except Exception as e:
             status[1] += 1
             if 'Invalid reaction provided' in str(e):
                 status[2].add(emoji)
+    if status[0]>status[1]:
+        limit[formatted_date][event.sender_id] -= 1
     return status
 limit = {}
 async def _filter(e):
@@ -310,6 +313,8 @@ async def _filter(e):
             'count': participants.total,
             'text': text,
             'time': current_time,
+            'react_count': Max,
+            'view_count': Max,
             }
         chat_info[chan_key] = id
         save_data(all=True)
