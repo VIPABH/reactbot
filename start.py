@@ -188,8 +188,8 @@ async def react(event, chat=None, id=None, emojis=None):
     status = [0, 0, set()]
     views = 0
     reacts = 0
-    rdb = info[str(e.sender_id)][chat_id].get('react_count', Max)
-    vdb = info[str(e.sender_id)][chat_id].get('view_count', Max)
+    rdb = info[str(event.sender_id)][chat_id].get('react_count', Max)
+    vdb = info[str(event.sender_id)][chat_id].get('view_count', Max)
     for ABH in ABHS:
         try:
             peer = await ABH.get_input_entity(chat_id)
