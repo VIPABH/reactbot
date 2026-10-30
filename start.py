@@ -109,7 +109,7 @@ async def start_callback(e):
         for num, chat in enumerate(chats, start=1):
             b.append(Button.inline(chat.title, data=f'channle:{chat.id}', style=green, icon=5258096772776991776))
             url=f'https://t.me/{chat.username}' if chat.username else f'https://t.me/c/{str(chat.id).replace("-100", "")}/1'
-            text += f"\n- القناة {ordinal_arabic_female(num) if ordinal_arabic_female(num) else num} - ( [{chat.title}]({url}) ) - ( `{chat.id}` )"
+            text += f"\n{num} - ( [{chat.title}]({url}) ) - ( `{chat.id}` )"
         button = chunk_list(b)
         button.append(back)
         return await e.edit(text, buttons=button)
@@ -183,57 +183,41 @@ emoji = [
     "🤷‍♀️", "🤷", "☃️", "🗿", "🆒", "💘", "🙈", "😇", "😨", "🤝", "✍️", "🤗", "🫡", "🎅", "🎄", "😴", "😭", "🤓", "👻",
     "👨‍💻", "👀", "🎃", "🙈", "💔", "🤨", "😐", "🍓", "🍾", "💋", "🖕", "😈"]
 async def react(event, chat=None, id=None, emojis=None):
-    chat_id = chat if chat else str(event.chat_id)
+    chat_id = chat if chat else event.chat_id
     msg_id = id if id else event.message.id
     status = [0, 0, set()]
     views = 0
     reacts = 0
-    sender_id = str(event.sender_id)
-    user_data = info.get(sender_id, {}).get(chat_id, {})
-    rdb = user_data.get('react_count', 0)
-    vdb = user_data.get('view_count', 0)
-    for ABH_client in ABHS:
+    rdb = info[str(e.sender_id)][chat_id].get('react_count', Max)
+    vdb = info[str(e.sender_id)][chat_id].get('view_count', Max)
+    for ABH in ABHS:
         try:
-            peer = await ABH_client.get_input_entity(chat_id)
+            peer = await ABH.get_input_entity(chat_id)
         except Exception:
+            peer = await ABH.get_entity(chat_id)
+        if not views >= vdb:
+            await ABH(GetMessagesViewsRequest(
+                peer=peer,
+                id=[int(msg_id)],
+                increment=True 
+            ))
+            views += 1
+        if not reacts >= rdb:
+            emoji = random.choice(emojis) if emojis else random.choice(['❤️', '🕊', '🌚'])
             try:
-                peer = await ABH_client.get_entity(chat_id)
-            except Exception:
-                continue
-        try:
-            if vdb and vdb > 0:
-                if views < vdb:
-                    await ABH_client(GetMessagesViewsRequest(
-                        peer=peer,
-                        id=[int(msg_id)],
-                        increment=True 
-                    ))
-                    views += 1
-            else:
-                await ABH_client(GetMessagesViewsRequest(
+                await ABH(SendReactionRequest(
                     peer=peer,
-                    id=[int(msg_id)],
-                    increment=True 
+                    msg_id=int(msg_id),
+                    reaction=[ReactionEmoji(emoticon=emoji)],
+                    big=False
                 ))
-        except Exception:
-            pass
-        if rdb and rdb > 0:
-            if reacts < rdb:
-                emoji = random.choice(emojis) if emojis else random.choice(['❤️', '🕊', '🌚'])
-                try:
-                    await ABH_client(SendReactionRequest(
-                        peer=peer,
-                        msg_id=int(msg_id),
-                        reaction=[ReactionEmoji(emoticon=emoji)],
-                        big=False
-                    ))
-                    reacts += 1
-                    status[0] += 1
-                    await asyncio.sleep(0.3)
-                except Exception as react_err:
-                    status[1] += 1
-                    if 'Invalid reaction provided' in str(react_err):
-                        status[2].add(emoji)
+                reacts += 1
+                status[0] += 1
+                await asyncio.sleep(0.3)
+            except Exception as e:
+                status[1] += 1
+                if 'Invalid reaction provided' in str(e):
+                    status[2].add(emoji)
     return status
 limit = {}
 async def _filter(e):
