@@ -61,20 +61,21 @@ def buttons(e):
         limit[formatted_date] = {}
     if iid not in limit[formatted_date]:
         limit[formatted_date][iid] = 3
-    tries = limit[formatted_date][iid]
+    tries = limit[formatted_date][iid] >= 0
     if id not in info or not info[id].values():
         b = [
-            Button.inline('اضف قناة', data='add_channle', style=green, icon=5222040745665379997), 
-            Button.inline(f'رياكت ( 3\\{tries} )', data='react', style=green if limit[formatted_date][iid] >= 1 else red, icon=5884106131822875141), 
-        ]
+            Button.inline('اضف قناة', data='add_channle', style=green, icon=5222040745665379997)]
+        if tries > 0:
+            b.append(Button.inline(f'رياكت ( 3\\{tries} )', data='react', style=green, icon=5884106131822875141))
     else:
         b = [
             Button.inline('اضف قناة', data='add_channle', style=blue, icon=5222040745665379997),
             Button.inline('حذف قناة', data='del_channle', style=red, icon=5408832111773757273),
             Button.inline('القنوات المضافة', data='list_channles', style=blue, icon=6323116093724428158),
             Button.inline('الاعدادات', data='settings', style=green, icon=5258096772776991776),
-            Button.inline(f'رياكت ( 3\\{tries} )', data='react', style=green if limit[formatted_date][iid] >= 1 else red, icon=5884106131822875141), 
             ]
+        if tries > 0:
+            b.append(Button.inline(f'رياكت ( 3\\{tries} )', data='react', style=green, icon=5884106131822875141))
     return chunk_list(b)
 session = {}
 @ABH.on(events.NewMessage(pattern=r'^/start$'))
@@ -108,8 +109,7 @@ async def start_callback(e):
         for num, chat in enumerate(chats, start=1):
             b.append(Button.inline(chat.title, data=f'channle:{chat.id}', style=green, icon=5258096772776991776))
             url=f'https://t.me/{chat.username}' if chat.username else f'https://t.me/c/{str(chat.id).replace("-100", "")}/1'
-            text += f"""
-            - القناة {ordinal_arabic_female(num) if ordinal_arabic_female(num) else num} - ( [{chat.title}]({url}) ) - ( `{chat.id}` )"""
+            text += f"\n- القناة {ordinal_arabic_female(num) if ordinal_arabic_female(num) else num} - ( [{chat.title}]({url}) ) - ( `{chat.id}` )"
         button = chunk_list(b)
         button.append(back)
         return await e.edit(text, buttons=button)
@@ -132,9 +132,9 @@ async def start_callback(e):
             limit[formatted_date][id] = 3
         tries = limit[formatted_date][id]
         if tries <= 0:
-            return await e.answer('عذرا محاولاتك انتهت حاول مجددا غدا')
+            return await e.edit('عذرا محاولاتك انتهت حاول مجددا غدا', buttons=back)
         session[id] = {"step": data, 'chat': None}
-        return await e.edit('ارسل الان رابط رسالة', buttons=back)
+        return await e.edit('ارسل الان رابط رسالة \n يسمح لك ب 3 رياكتات يوميا وبعدها يتطلب من الاننتظار لليوم التالي', buttons=back)
 @ABH.on(events.CallbackQuery(pattern=b'^(delete|channle|react_count|setreact|view_count)'))
 async def _(e):
     data = e.data.decode('utf-8')
