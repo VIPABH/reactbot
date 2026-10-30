@@ -26,6 +26,48 @@ async def _(e):
     await is_chat_in(e)
     await is_user(e)
     await _filter(e)
+@ABH.on(events.CallbackQuery)
+async def _(e):
+    await is_user(e)
+    if not _me:
+        me = await ABH.get_me()
+        _me.append(me)
+    else:
+        me = _me[0]
+    key = f"banned_users:{me.id}"
+    user_id = e.sender_id
+    if r.sismember(key, user_id):
+        await e.reply('عذرا صديقي انت محظور من البوت \n تفضل راسل المطور لرفع الحظر @k_4x1')
+        raise events.StopPropagation
+async def banned_user(e):
+    step = ban_and_unban.get(e.sender_id, None)
+    if step in ('ban_user', 'un_ban_user'):
+        text = e.text.strip()
+        target = None
+        if text.isdigit():
+            target = int(text)
+        elif text.startswith(('@', 'https://t.me/')):
+            target = text            
+        if not target:
+            return await e.reply('⚠️ عذراً، يرجى إرسال أيدي المستخدم أو يوزره بشكل صحيح.', buttons=back_to_button)
+        try:
+            user = await ABH.get_entity(target)
+        except Exception:
+            return await e.reply('❌ عذراً، لم أتمكن من العثور على حساب هذا المستخدم.')
+        if not _me:
+            me = await ABH.get_me()
+            _me.append(me)
+        else:
+            me = _me[0]
+        key = f"banned_users:{me.id}"
+        user_id = user.id
+        ban_and_unban.pop(e.sender_id, None)
+        if step == "ban_user":
+            r.sadd(key, user_id)
+            return await e.reply(f'✅ تم حظر ( {await ment(user)} ) بنجاح.')
+        else:
+            r.srem(key, user_id)
+            return await e.reply(f'✅ تم إلغاء حظر ( {await ment(user)} ) بنجاح.')
 async def is_chat_in(e):
     chat_id = str(e.chat_id)
     if chat_id in chat_info:
@@ -79,10 +121,45 @@ def buttons(e):
             b.append(Button.inline(f'رياكت ( 3\\{tries} )', data='react', style=green, icon=5884106131822875141))
     return chunk_list(b)
 session = {}
-@ABH.on(events.NewMessage(pattern=r'^/start$'))
+wfffp_button =[
+    Button.inline('عدد المستخدمين', data='users_count', style=blue, icon=5305355874187880345),
+    Button.inline('المستخدمين', data='users', style=blue, icon=5305355874187880345),
+    Button.inline('المحظورين', data='banned_users', style=blue, icon=5305355874187880345),
+    Button.inline('حظر شخص', data='ban_user', style=red, icon=5305355874187880345),
+    Button.inline('الغاء حظر شخص', data='un_ban_user', style=green, icon=5305355874187880345),
+]
+chunked_button = chunk_list(wfffp_button)
+chunked_button.append(_back)
+back_to_button = [Button.inline('ارجع للازرار', data='back_button', style=red, icon=5305355874187880345)]
+@ABH.on(events.NewMessage(pattern=r'^/start'))
 async def start(e):
+    if e.sender_id == wfffp:return await send(e, 'اهلا عزيزي ابن هاشم , شنو تحب تسوي', buttons=chunked_button)
     await send(e, f'اهلا عزيزي ( {await ment(e)} ) اني بوت مال رياكشن وظيفتي اضيفلك رياكشنات ومشاهدات لقناتك', buttons=buttons(e))
     session[e.sender_id] = {}
+ban_and_unban = {}
+@ABH.on(events.CallbackQuery(pattern=b'^(users_count|banned_users|ban_user|un_ban_user|back_button|users)$'))
+async def wfffp_callback(e):
+    if e.sender_id != wfffp:return
+    data = e.data.decode('utf-8')
+    if not _me:
+        me = await ABH.get_me()
+        _me.append(me)
+    else:
+        me = _me[0]
+    key = f"users:{me.id}"
+    users_count = r.scard(key)
+    if data == 'users_count':return await e.edit(f'عدد مستخدمين البوت هو ( {users_count} )', buttons=back_to_button)
+    elif data == "banned_users":
+        if not r.smembers(f"banned_users:{me.id}"):return await e.edit('ماكو مستخدمين محظورين', buttons=back_to_button)
+        mention = [f"{num}- ( {await ment(id)} ) - ( `{id}` )" for num, id in enumerate(r.smembers(f"banned_users:{me.id}"), start=1)]
+        await e.edit(f"المستخدمين المحظورين:\n {'\n'.join(mention)}", buttons=back_to_button)
+    elif data == "users":
+        mention = [f"{num}- ( {await ment(id)} ) - ( `{id}` )" for num, id in enumerate(r.smembers(f"users:{me.id}"), start=1)]
+        await e.edit(f"المستخدمين:\n {'\n'.join(mention)}", buttons=back_to_button)
+    elif data == 'back_button':await e.edit('تفضل ابنل الهاش', buttons=chunked_button)
+    else:
+        ban_and_unban[e.sender_id] = data
+        await e.edit('ارسل الان ايدي او يوزر المستخدم', buttons=back_to_button)
 @ABH.on(events.CallbackQuery(pattern=b'^(add_channle|del_channle|list_channles|settings|back|react)$'))
 async def start_callback(e):
     id = e.sender_id
