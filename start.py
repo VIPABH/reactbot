@@ -226,8 +226,8 @@ async def random_react(event, chat=None, id=None, emojis=None):
     formatted_date = datetime.now().strftime("%Y %m %d")
     if formatted_date not in limit:
         limit[formatted_date] = {}
-    if e.sender_id not in limit[formatted_date]:
-        limit[formatted_date][e.sender_id] = 3
+    if event.sender_id not in limit[formatted_date]:
+        limit[formatted_date][event.sender_id] = 3
     for ABH in ABHS:
         try:
             peer = await ABH.get_input_entity(int(chat_id))
@@ -248,7 +248,7 @@ async def random_react(event, chat=None, id=None, emojis=None):
             ))
             reacts += 1
             status[0] += 1
-            limit[formatted_date][e.sender_id] -= 1
+            limit[formatted_date][event.sender_id] -= 1
             await asyncio.sleep(0.3)
         except Exception as e:
             status[1] += 1
