@@ -183,7 +183,7 @@ emoji = [
     "🤷‍♀️", "🤷", "☃️", "🗿", "🆒", "💘", "🙈", "😇", "😨", "🤝", "✍️", "🤗", "🫡", "🎅", "🎄", "😴", "😭", "🤓", "👻",
     "👨‍💻", "👀", "🎃", "🙈", "💔", "🤨", "😐", "🍓", "🍾", "💋", "🖕", "😈"]
 async def react(event, chat=None, id=None, emojis=None):
-    chat_id = chat if chat else event.chat_id
+    chat_id = chat if chat else str(event.chat_id)
     msg_id = id if id else event.message.id
     status = [0, 0, set()]
     views = 0
@@ -347,7 +347,8 @@ async def _filter(e):
         status_msg = await e.reply(f'يجري عمل الرياكت')
         chat = session[id]['temp']['chat']
         mid = session[id]['temp']['id']
-        status = await react(e, chat=int(chat) if chat.isdigit() else chat, id=mid, emojis=valid_emojis)
+        chat_entity = await ABH.get_entity(chat)
+        status = await react(e, chat=str(chat.id) if chat.isdigit() else chat, id=mid, emojis=valid_emojis)
         caption = f"""
 ✅ **اكتملت العملية بنجاح**\n
 📍 اليوزر: ( `{chat}` )
