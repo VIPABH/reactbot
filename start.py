@@ -269,7 +269,7 @@ async def _filter(e):
             return await e.reply('تم تجاهل الاضافة', buttons=back)
         if chan_key in info[sid]:
             return await e.reply('عذرا بس القناة هاي ضايفها انت من قبل', buttons=back)
-        if chan_key in chat_info and int(chat_info[chan_key]) != e.sender_id:return await e.reply(f'عذرا بس هاي القناة مضافة من ( {await ment(int(chat_info[str(chat.id)]))} )')
+        if chan_key in chat_info and int(chat_info[chan_key]) != e.sender_id:return await e.reply(f'عذرا بس هاي القناة مضافة من ( {await ment(int(chat_info[chan_key]))} )')
         try:
             bot_user = await ABH.get_me()
             participant = await ABH(GetParticipantRequest(
