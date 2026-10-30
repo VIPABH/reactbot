@@ -61,7 +61,7 @@ def buttons(e):
         limit[formatted_date] = {}
     if iid not in limit[formatted_date]:
         limit[formatted_date][iid] = 3
-    tries = limit[formatted_date][iid] >= 0
+    tries = limit[formatted_date][iid]
     if id not in info or not info[id].values():
         b = [
             Button.inline('اضف قناة', data='add_channle', style=green, icon=5222040745665379997)]
@@ -348,7 +348,7 @@ async def _filter(e):
         chat = session[id]['temp']['chat']
         mid = session[id]['temp']['id']
         chat_entity = await ABH.get_entity(chat)
-        status = await react(e, chat=str(chat.id) if chat.isdigit() else chat, id=mid, emojis=valid_emojis)
+        status = await react(e, chat=str(chat_entity.id), id=mid, emojis=valid_emojis)
         caption = f"""
 ✅ **اكتملت العملية بنجاح**\n
 📍 اليوزر: ( `{chat}` )
