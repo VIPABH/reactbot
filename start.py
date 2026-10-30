@@ -223,31 +223,37 @@ async def random_react(event, chat=None, id=None, emojis=None):
     chat_id = chat if chat else event.chat_id
     msg_id = id if id else event.message.id
     status = [0, 0, set()]
+    formatted_date = datetime.now().strftime("%Y %m %d")
+    if formatted_date not in limit:
+        limit[formatted_date] = {}
+    if e.sender_id not in limit[formatted_date]:
+        limit[formatted_date][e.sender_id] = 3
     for ABH in ABHS:
         try:
             peer = await ABH.get_input_entity(int(chat_id))
         except Exception:
             peer = await ABH.get_entity(int(chat_id))
-            await ABH(GetMessagesViewsRequest(
+        await ABH(GetMessagesViewsRequest(
+            peer=peer,
+            id=[int(msg_id)],
+            increment=True 
+        ))
+        emoji = random.choice(emojis) if emojis else random.choice(['❤️', '🕊', '🌚'])
+        try:
+            await ABH(SendReactionRequest(
                 peer=peer,
-                id=[int(msg_id)],
-                increment=True 
+                msg_id=int(msg_id),
+                reaction=[ReactionEmoji(emoticon=emoji)],
+                big=False
             ))
-            emoji = random.choice(emojis) if emojis else random.choice(['❤️', '🕊', '🌚'])
-            try:
-                await ABH(SendReactionRequest(
-                    peer=peer,
-                    msg_id=int(msg_id),
-                    reaction=[ReactionEmoji(emoticon=emoji)],
-                    big=False
-                ))
-                reacts += 1
-                status[0] += 1
-                await asyncio.sleep(0.3)
-            except Exception as e:
-                status[1] += 1
-                if 'Invalid reaction provided' in str(e):
-                    status[2].add(emoji)
+            reacts += 1
+            status[0] += 1
+            limit[formatted_date][e.sender_id] -= 1
+            await asyncio.sleep(0.3)
+        except Exception as e:
+            status[1] += 1
+            if 'Invalid reaction provided' in str(e):
+                status[2].add(emoji)
     return status
 limit = {}
 async def _filter(e):
