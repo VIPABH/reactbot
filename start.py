@@ -224,9 +224,9 @@ async def random_react(event, chat=None, id=None, emojis=None):
     msg_id = id if id else event.message.id
     for ABH in ABHS:
         try:
-            peer = await ABH.get_input_entity(chat_id)
+            peer = await ABH.get_input_entity(int(chat_id))
         except Exception:
-            peer = await ABH.get_entity(chat_id)
+            peer = await ABH.get_entity(int(chat_id))
             await ABH(GetMessagesViewsRequest(
                 peer=peer,
                 id=[int(msg_id)],
