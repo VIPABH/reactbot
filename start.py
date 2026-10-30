@@ -233,7 +233,7 @@ async def react(event, chat=None, id=None, emojis=None):
                 except Exception as react_err:
                     status[1] += 1
                     if 'Invalid reaction provided' in str(react_err):
-                        status[2].add(emoji)                    
+                        status[2].add(emoji)
     return status
 limit = {}
 async def _filter(e):
@@ -269,7 +269,7 @@ async def _filter(e):
             return await e.reply('تم تجاهل الاضافة', buttons=back)
         if chan_key in info[sid]:
             return await e.reply('عذرا بس القناة هاي ضايفها انت من قبل', buttons=back)
-        if chan_key in chat_info and int(chat_info[chan_key]) != e.sender_id:return await e.reply(f'عذرا بس هاي القناة مضافة من ( {await ment(int(chat_info[chat.id]))} )')
+        if chan_key in chat_info and int(chat_info[chan_key]) != e.sender_id:return await e.reply(f'عذرا بس هاي القناة مضافة من ( {await ment(int(chat_info[str(chat.id)]))} )')
         try:
             bot_user = await ABH.get_me()
             participant = await ABH(GetParticipantRequest(
@@ -349,6 +349,8 @@ async def _filter(e):
         session[id]['step'] = 'setemoji'
         session[id]['temp']['chat'] = chat
         session[id]['temp']['id'] = mid
+        chat_entity = await ABH.get_entity(chat)
+        if not chat:return await e.reply('عذرا بس القناة غير موجودة')
         await try_forward(e, chat=int(chat) if chat.isdigit() else chat, id=mid, to=e.sender_id)
         return await e.reply('ارسل الان التفاعلات المطلوبة')
     elif step == 'setemoji':
@@ -374,7 +376,7 @@ async def _filter(e):
             caption+= f'\n❌ ايموجيات مقفولة في القناة: ( {'و '.join(status[2])} )'
         if status[0]>0:
             limit[formatted_date][id] -= 1
-        if 'temp' in session[id]:
+        if 'temp' in session.get(id, {}):
             del session[id]['temp']
         del session[id]
         return await status_msg.edit(caption)
