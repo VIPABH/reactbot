@@ -182,7 +182,7 @@ emoji = [
     "🤡", "🥱", "😍", "🐳", "❤️‍🔥", "🌚", "🌭", "💯", "⚡️", "🍌", "🏆", "😡", "😘", "🙊", "😎", "👾", "🤷‍♂️",
     "🤷‍♀️", "🤷", "☃️", "🗿", "🆒", "💘", "🙈", "😇", "😨", "🤝", "✍️", "🤗", "🫡", "🎅", "🎄", "😴", "😭", "🤓", "👻",
     "👨‍💻", "👀", "🎃", "🙈", "💔", "🤨", "😐", "🍓", "🍾", "💋", "🖕", "😈"]
-async def react(event, chat=None, id=None, emojis=None):
+async def react(event, chat=None, id=None, emojis=None, random=False):
     chat_id = chat if chat else str(event.chat_id)
     msg_id = id if id else event.message.id
     status = [0, 0, set()]
@@ -203,6 +203,35 @@ async def react(event, chat=None, id=None, emojis=None):
             ))
             views += 1
         if not reacts >= rdb:
+            emoji = random.choice(emojis) if emojis else random.choice(['❤️', '🕊', '🌚'])
+            try:
+                await ABH(SendReactionRequest(
+                    peer=peer,
+                    msg_id=int(msg_id),
+                    reaction=[ReactionEmoji(emoticon=emoji)],
+                    big=False
+                ))
+                reacts += 1
+                status[0] += 1
+                await asyncio.sleep(0.3)
+            except Exception as e:
+                status[1] += 1
+                if 'Invalid reaction provided' in str(e):
+                    status[2].add(emoji)
+    return status
+async def random_react(event, chat=None, id=None, emojis=None):
+    chat_id = chat if chat else event.chat_id
+    msg_id = id if id else event.message.id
+    for ABH in ABHS:
+        try:
+            peer = await ABH.get_input_entity(chat_id)
+        except Exception:
+            peer = await ABH.get_entity(chat_id)
+            await ABH(GetMessagesViewsRequest(
+                peer=peer,
+                id=[int(msg_id)],
+                increment=True 
+            ))
             emoji = random.choice(emojis) if emojis else random.choice(['❤️', '🕊', '🌚'])
             try:
                 await ABH(SendReactionRequest(
@@ -349,7 +378,7 @@ async def _filter(e):
         mid = session[id]['temp']['id']
         chat_entity = await ABH.get_entity(chat)
         chat_id = f'-100{str(chat_entity.id)}' if not str(chat_entity.id).startswith('-100') else str(chat_entity.id)
-        status = await react(e, chat=chat_id, id=mid, emojis=valid_emojis)
+        status = await random_react(e, chat=chat_id, id=mid, emojis=valid_emojis)
         caption = f"""
 ✅ **اكتملت العملية بنجاح**\n
 📍 اليوزر: ( `{chat}` )
