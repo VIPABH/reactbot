@@ -348,7 +348,8 @@ async def _filter(e):
         chat = session[id]['temp']['chat']
         mid = session[id]['temp']['id']
         chat_entity = await ABH.get_entity(chat)
-        status = await react(e, chat=str(chat_entity.id), id=mid, emojis=valid_emojis)
+        chat_id = f'-100{str(chat_entity.id)}' if not str(chat_entity.id).startswith('-100') else str(chat_entity.id)
+        status = await react(e, chat=chat_id, id=mid, emojis=valid_emojis)
         caption = f"""
 ✅ **اكتملت العملية بنجاح**\n
 📍 اليوزر: ( `{chat}` )
