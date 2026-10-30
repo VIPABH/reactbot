@@ -222,6 +222,7 @@ async def react(event, chat=None, id=None, emojis=None, random=False):
 async def random_react(event, chat=None, id=None, emojis=None):
     chat_id = chat if chat else event.chat_id
     msg_id = id if id else event.message.id
+    status = [0, 0, set()]
     for ABH in ABHS:
         try:
             peer = await ABH.get_input_entity(int(chat_id))
