@@ -33,7 +33,7 @@ async def is_chat_in(e):
         isuser = await is_user(e, id=id, callable=True)
         if not isuser:
             react_list = info[str(id)][chat_id].get('react', [])
-            return await react(e, emojis=react_list)
+            return await react(e, chat=chat_id, emojis=react_list)
         current_time = time.time()
         if id not in send_msg or (current_time - send_msg[id]) >= 300:
             send_msg[id] = current_time
