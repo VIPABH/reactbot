@@ -65,18 +65,17 @@ def buttons(e):
     tries = limit[formatted_date][iid]
     if id not in info or not info[id].values():
         b = [
-            Button.inline('اضف قناة', data='add_channle', style=green, icon=5222040745665379997)]
-        if tries > 0:
-            b.append(Button.inline(f'رياكت ( 3\\{tries} )', data='react', style=green, icon=5884106131822875141))
+            Button.inline('اضف قناة', data='add_channle', style=green, icon=5222040745665379997),
+            Button.inline(f'رياكت ( 3\\{tries} )', data='react', style=green, icon=5884106131822875141)]
+
     else:
         b = [
             Button.inline('اضف قناة', data='add_channle', style=blue, icon=5222040745665379997),
             Button.inline('حذف قناة', data='del_channle', style=red, icon=5408832111773757273),
             Button.inline('القنوات المضافة', data='list_channles', style=blue, icon=6323116093724428158),
             Button.inline('الاعدادات', data='settings', style=green, icon=5258096772776991776),
+            Button.inline(f'رياكت ( 3\\{tries} )', data='react', style=green, icon=5884106131822875141)
             ]
-        if tries > 0:
-            b.append(Button.inline(f'رياكت ( 3\\{tries} )', data='react', style=green, icon=5884106131822875141))
     return chunk_list(b)
 session = {}
 @ABH.on(events.NewMessage(pattern=r'^/start$'))
