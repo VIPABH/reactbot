@@ -189,7 +189,7 @@ async def react(event, chat=None, id=None, emojis=None):
     status = [0, 0, set()]
     views = 0
     reacts = 0
-    print(str(event.sender_id) in info, chat_id in info[str(event.sender_id)])
+    print(str(event.sender_id) in info, str(event.sender_id))
     rdb = info[str(event.sender_id)][chat_id].get('react_count', Max)
     vdb = info[str(event.sender_id)][chat_id].get('view_count', Max)
     for ABH in ABHS:
