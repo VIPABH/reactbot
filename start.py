@@ -137,6 +137,7 @@ async def start(e):
     await send(e, f'اهلا عزيزي ( {await ment(e)} ) اني بوت مال رياكشن وظيفتي اضيفلك رياكشنات ومشاهدات لقناتك', buttons=buttons(e))
     session[e.sender_id] = {}
 ban_and_unban = {}
+_me = []
 @ABH.on(events.CallbackQuery(pattern=b'^(users_count|banned_users|ban_user|un_ban_user|back_button|users)$'))
 async def wfffp_callback(e):
     if e.sender_id != wfffp:return
