@@ -183,13 +183,13 @@ emoji = [
     "🤷‍♀️", "🤷", "☃️", "🗿", "🆒", "💘", "🙈", "😇", "😨", "🤝", "✍️", "🤗", "🫡", "🎅", "🎄", "😴", "😭", "🤓", "👻",
     "👨‍💻", "👀", "🎃", "🙈", "💔", "🤨", "😐", "🍓", "🍾", "💋", "🖕", "😈"]
 async def react(event, chat=None, id=None, emojis=None, random=False):
-    chat_id = chat if chat else str(event.chat_id)
+    chat_id = chat if chat else event.chat_id
     msg_id = id if id else event.message.id
     status = [0, 0, set()]
     views = 0
     reacts = 0
-    rdb = info[str(event.sender_id)][chat_id].get('react_count', Max)
-    vdb = info[str(event.sender_id)][chat_id].get('view_count', Max)
+    rdb = info[str(event.sender_id)][str(chat_id)].get('react_count', Max)
+    vdb = info[str(event.sender_id)][str(chat_id)].get('view_count', Max)
     for ABH in ABHS:
         try:
             peer = await ABH.get_input_entity(chat_id)
@@ -246,7 +246,6 @@ async def random_react(event, chat=None, id=None, emojis=None):
                 reaction=[ReactionEmoji(emoticon=emoji)],
                 big=False
             ))
-            reacts += 1
             status[0] += 1
             limit[formatted_date][event.sender_id] -= 1
             await asyncio.sleep(0.3)
