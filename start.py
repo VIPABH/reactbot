@@ -4,6 +4,7 @@ from telethon.tl.types import MessageEntityCustomEmoji
 from telethon.tl.types import ChannelParticipantAdmin
 from telethon.errors import UserNotParticipantError
 from telethon.tl.types import ReactionEmoji
+from telethon.utils import get_peer_id
 from telethon.tl.types import Channel
 import asyncio, random, re, os, time
 from datetime import datetime
@@ -379,11 +380,11 @@ async def _filter(e):
             for char in t:
                 if char in emoji:
                     valid_emojis.append(char)
-        status_msg = await e.reply(f'يجري عمل الرياكت')
+        status_msg = await e.reply('يجري عمل الرياكت...')
         chat = session[id]['temp']['chat']
         mid = session[id]['temp']['id']
         chat_entity = await ABH.get_entity(chat)
-        chat_id = f'-100{str(chat_entity.id)}' if not str(chat_entity.id).startswith('-100') else str(chat_entity.id)
+        chat_id = get_peer_id(chat_entity)
         status = await random_react(e, chat=chat_id, id=mid, emojis=valid_emojis)
         caption = f"""
 ✅ **اكتملت العملية بنجاح**\n
