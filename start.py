@@ -26,6 +26,7 @@ async def _(e):
     await is_chat_in(e)
     await is_user(e)
     await _filter(e)
+    await banned_user(e)
 @ABH.on(events.CallbackQuery)
 async def _(e):
     await is_user(e)
