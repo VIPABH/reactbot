@@ -288,6 +288,7 @@ async def react(event, chat=None, id=None, emojis=None):
                     except Exception as err:
                         print(f"[فشل تام] الحساب لمطالعة القناة أو الوصول لها: {err}")
                         continue
+        if not peer:return status
         if not views >= vdb:
             try:
                 await ABH(GetMessagesViewsRequest(
