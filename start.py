@@ -244,6 +244,7 @@ emoji = [
     "🤡", "🥱", "😍", "🐳", "❤️‍🔥", "🌚", "🌭", "💯", "⚡️", "🍌", "🏆", "😡", "😘", "🙊", "😎", "👾", "🤷‍♂️",
     "🤷‍♀️", "🤷", "☃️", "🗿", "🆒", "💘", "🙈", "😇", "😨", "🤝", "✍️", "🤗", "🫡", "🎅", "🎄", "😴", "😭", "🤓", "👻",
     "👨‍💻", "👀", "🎃", "🙈", "💔", "🤨", "😐", "🍓", "🍾", "💋", "🖕", "😈"]
+hint_msg = {}
 async def react(event, chat=None, id=None, emojis=None):
     chat_id = chat if chat else str(event.chat_id)
     msg_id = id if id else event.message.id
@@ -254,10 +255,24 @@ async def react(event, chat=None, id=None, emojis=None):
     rdb = info[id][chat_id].get('react_count', Max)
     vdb = info[id][chat_id].get('view_count', Max)
     for ABH in ABHS:
+        peer = None
         try:
             peer = await ABH.get_input_entity(int(chat_id))
         except Exception:
-            peer = await ABH.get_entity(int(chat_id))
+            try:
+                peer = await ABH.get_entity(int(chat_id))
+            except Exception as er:
+                if 'Could not find the input entity' in str(er):
+                    current_time = time.time()                        
+                    if id not in hint_msg:
+                        hint_msg[id] = current_time
+                        _chat = await react_bot.get_entity(int(chat_id))
+                        await ABH.send_message(int(id), f'عذرا صديقي القناة محظوره ماكدر اتفاعل بيها ( {_chat.title} )\nاحذفها وجرب تضيف قناة اخرى')
+                    else:
+                        if (current_time - hint_msg[id]) > 300:
+                            hint_msg[id] = current_time
+                            await ABH.send_message(int(id), f'عذرا صديقي القناة محظوره ماكدر اتفاعل بيها  ( {_chat.title} )\nاحذفها وجرب تضيف قناة اخرى')
+                continue
         if not views >= vdb:
             await ABH(GetMessagesViewsRequest(
                 peer=peer,
@@ -265,7 +280,7 @@ async def react(event, chat=None, id=None, emojis=None):
                 increment=True 
             ))
             views += 1
-        if not peer:return status
+        if not peer:continue
         if not reacts >= rdb:
             emoji = random.choice(list(emojis)) if emojis else random.choice(['❤️', '🕊', '🌚'])
             try:
@@ -389,12 +404,12 @@ async def _filter(e):
         return await e.reply(caption, buttons=button)
     elif step == 'setreact':
         if not text:return await e.reply('يرجى ارسال نص صالح', buttons=back)
-        valid_emojis = []
+        valid_emojis = set()
         uninvailde = set()
         for t in text.split():
             for char in t:
                 if char in emoji:
-                    valid_emojis.append(char)
+                    valid_emojis.add(char)
                 else:
                     uninvailde.add(t)
         caption = f'**النص المدخل** ( `{text}` )\n'
@@ -403,7 +418,7 @@ async def _filter(e):
         if uninvailde:
             caption+=f'تم تخطي ( {', '.join(uninvailde)} )\n'
         if not valid_emojis:return await e.reply('لم يتم ارسال ايموجي صالح', buttons=back)
-        info[sid][chat_id]['react'] = valid_emojis
+        info[sid][chat_id]['react'] = list(valid_emojis)
         save_data()
         del session[id]
         return await e.reply(caption, buttons=back)
@@ -432,18 +447,22 @@ async def _filter(e):
         await try_forward(e, chat=int(chat) if chat.isdigit() else chat, id=mid, to=e.sender_id)
         return await e.reply('ارسل الان التفاعلات المطلوبة')
     elif step == 'setemoji':
-        valid_emojis = []
-        uninvailde = []
+        valid_emojis = set()
+        uninvailde = set()
         for t in text.split():
             for char in t:
                 if char in emoji:
-                    valid_emojis.append(char)
-        status_msg = await e.reply('يجري عمل الرياكت...')
+                    valid_emojis.add(char)
+                else: 
+                    uninvailde.add(t)
+        caption = 'يجري عمل الرياكت...'
+        if uninvailde:caption+=f'\n تم تخطي ايموجيات غير صالحه ( {"و ".join(uninvailde)} )'
+        status_msg = await e.reply(caption)
         chat = session[id]['temp']['chat']
         mid = session[id]['temp']['id']
         chat_entity = await ABH.get_entity(chat)
         if not chat_entity:return await e.reply('ما لكيت القناة الي طلبتها!')
-        status = await random_react(e, chat=chat_entity.id, id=mid, emojis=valid_emojis)
+        status = await random_react(e, chat=chat_entity.id, id=mid, emojis=list(valid_emojis))
         if 'temp' in session.get(id, {}):
             del session[id]['temp']
         del session[id]
