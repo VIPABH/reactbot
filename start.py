@@ -251,37 +251,21 @@ async def react(event, chat=None, id=None, emojis=None):
     status = [0, 0, set()]
     views = 0
     reacts = 0
-    chat_key = str(chat_info[chat_id])
-    rdb = info[chat_key][chat_id].get('react_count', Max)
-    vdb = info[chat_key][chat_id].get('view_count', Max)
+    id = str(chat_info[chat_id])
+    rdb = info[id][chat_id].get('react_count', Max)
+    vdb = info[id][chat_id].get('view_count', Max)
     for ABH in ABHS:
-        peer = None
         try:
             peer = await ABH.get_input_entity(int(chat_id))
-        except Exception as e1:
-            try:
-                peer = await ABH.get_input_entity(event.message.peer_id)
-            except Exception as e2:
-                try:
-                    peer = await event.get_input_sender() or await event.get_input_chat()
-                except Exception as e3:
-                    try:
-                        channel_full = await ABH(GetFullChannelRequest(int(chat_id)))
-                        peer = channel_full.chats[0]
-                    except Exception as err:
-                        print(f"[فشل تام] الحساب لمطالعة القناة أو الوصول لها: {err}")
-                        continue
-        if not peer:return status
+        except Exception:
+            peer = await ABH.get_entity(int(chat_id))
         if not views >= vdb:
-            try:
-                await ABH(GetMessagesViewsRequest(
-                    peer=peer,
-                    id=[int(msg_id)],
-                    increment=True 
-                ))
-                views += 1
-            except Exception:
-                pass
+            await ABH(GetMessagesViewsRequest(
+                peer=peer,
+                id=[int(msg_id)],
+                increment=True 
+            ))
+            views += 1
         if not reacts >= rdb:
             emoji = random.choice(list(emojis)) if emojis else random.choice(['❤️', '🕊', '🌚'])
             try:
@@ -303,27 +287,21 @@ async def random_react(event, chat=None, id=None, emojis=None):
     chat_id = chat if chat else event.chat_id
     msg_id = id if id else event.message.id
     status = [0, 0, set()]
+    formatted_date = datetime.now().strftime("%Y %m %d")
+    if formatted_date not in limit:
+        limit[formatted_date] = {}
+    if event.sender_id not in limit[formatted_date]:
+        limit[formatted_date][event.sender_id] = 3
     for ABH in ABHS:
         try:
             peer = await ABH.get_input_entity(int(chat_id))
         except Exception:
-            try:
-                peer = await ABH.get_input_entity(event.message.peer_id)
-            except Exception:
-                try:
-                    peer = await event.get_input_sender() or await event.get_input_chat()
-                except Exception as err:
-                    print(f"تعذر العثور على الكيان نهائياً: {err}")
-                    continue
-        try:
-            await ABH(GetMessagesViewsRequest(
-                peer=peer,
-                id=[int(msg_id)],
-                increment=True 
-            ))
-        except Exception as view_err:
-            pass
-        if not peer:return status
+            peer = await ABH.get_entity(int(chat_id))
+        await ABH(GetMessagesViewsRequest(
+            peer=peer,
+            id=[int(msg_id)],
+            increment=True 
+        ))
         emoji = random.choice(emojis) if emojis else random.choice(['❤️', '🕊', '🌚'])
         try:
             await ABH(SendReactionRequest(
@@ -338,6 +316,8 @@ async def random_react(event, chat=None, id=None, emojis=None):
             status[1] += 1
             if 'Invalid reaction provided' in str(e):
                 status[2].add(emoji)
+    if status[0]>status[1]:
+        limit[formatted_date][event.sender_id] -= 1
     return status
 async def _filter(e):
     if not e.is_private:return
