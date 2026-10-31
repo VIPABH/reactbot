@@ -313,12 +313,22 @@ async def random_react(event, chat=None, id=None, emojis=None):
         try:
             peer = await ABH.get_input_entity(int(chat_id))
         except Exception:
-            peer = await ABH.get_entity(int(chat_id))
-        await ABH(GetMessagesViewsRequest(
-            peer=peer,
-            id=[int(msg_id)],
-            increment=True 
-        ))
+            try:
+                peer = await ABH.get_input_entity(event.message.peer_id)
+            except Exception:
+                try:
+                    peer = await event.get_input_sender() or await event.get_input_chat()
+                except Exception as err:
+                    print(f"تعذر العثور على الكيان نهائياً: {err}")
+                    continue
+        try:
+            await ABH(GetMessagesViewsRequest(
+                peer=peer,
+                id=[int(msg_id)],
+                increment=True 
+            ))
+        except Exception as view_err:
+            pass
         emoji = random.choice(emojis) if emojis else random.choice(['❤️', '🕊', '🌚'])
         try:
             await ABH(SendReactionRequest(
@@ -333,7 +343,7 @@ async def random_react(event, chat=None, id=None, emojis=None):
             status[1] += 1
             if 'Invalid reaction provided' in str(e):
                 status[2].add(emoji)
-    if status[0]>status[1]:
+    if status[0] > status[1]:
         limit[formatted_date][event.sender_id] -= 1
     return status
 limit = {}
