@@ -268,21 +268,31 @@ async def react(event, chat=None, id=None, emojis=None):
     status = [0, 0, set()]
     views = 0
     reacts = 0
-    id = str(chat_info[chat_id])
-    rdb = info[id][chat_id].get('react_count', Max)
-    vdb = info[id][chat_id].get('view_count', Max)
+    chat_key = str(chat_info[chat_id])
+    rdb = info[chat_key][chat_id].get('react_count', Max)
+    vdb = info[chat_key][chat_id].get('view_count', Max)    
     for ABH in ABHS:
         try:
             peer = await ABH.get_input_entity(int(chat_id))
         except Exception:
-            peer = await ABH.get_entity(int(chat_id))
+            try:
+                peer = await ABH.get_input_entity(event.message.peer_id)
+            except Exception:
+                try:
+                    peer = await event.get_input_sender() or await event.get_input_chat()
+                except Exception as err:
+                    print(f"تعذر العثور على الكيان نهائياً لهذا الحساب: {err}")
+                    continue
         if not views >= vdb:
-            await ABH(GetMessagesViewsRequest(
-                peer=peer,
-                id=[int(msg_id)],
-                increment=True 
-            ))
-            views += 1
+            try:
+                await ABH(GetMessagesViewsRequest(
+                    peer=peer,
+                    id=[int(msg_id)],
+                    increment=True 
+                ))
+                views += 1
+            except Exception:
+                pass
         if not reacts >= rdb:
             emoji = random.choice(list(emojis)) if emojis else random.choice(['❤️', '🕊', '🌚'])
             try:
