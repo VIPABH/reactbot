@@ -255,19 +255,19 @@ async def react(event, chat=None, id=None, emojis=None):
     id = str(chat_info[chat_id])
     rdb = info[id][chat_id].get('react_count', Max)
     vdb = info[id][chat_id].get('view_count', Max)
-    for ABH in ABHS:
+    for _ABH in ABHS:
         peer = None
         try:
-            peer = await ABH.get_input_entity(int(chat_id))
+            peer = await _ABH.get_input_entity(int(chat_id))
         except Exception:
             try:
-                peer = await ABH.get_entity(int(chat_id))
+                peer = await _ABH.get_entity(int(chat_id))
             except Exception as er:
                 if 'Could not find the input entity' in str(er):
                     current_time = time.time()
                     if id not in hint_msg:
                         hint_msg[id] = current_time
-                        _chat = await react_bot.get_entity(int(chat_id))
+                        _chat = await ABH.get_entity(int(chat_id))
                         await ABH.send_message(int(id), f'عذرا صديقي القناة محظوره ماكدر اتفاعل بيها ( {_chat.title} )\nاحذفها وجرب تضيف قناة اخرى')
                     else:
                         if (current_time - hint_msg[id]) > 300:
@@ -275,7 +275,7 @@ async def react(event, chat=None, id=None, emojis=None):
                             await ABH.send_message(int(id), f'عذرا صديقي القناة محظوره ماكدر اتفاعل بيها  ( {_chat.title} )\nاحذفها وجرب تضيف قناة اخرى')
                 continue
         if not views >= vdb:
-            await ABH(GetMessagesViewsRequest(
+            await _ABH(GetMessagesViewsRequest(
                 peer=peer,
                 id=[int(msg_id)],
                 increment=True 
@@ -285,7 +285,7 @@ async def react(event, chat=None, id=None, emojis=None):
         if not reacts >= rdb:
             emoji = random.choice(list(emojis)) if emojis else random.choice(['❤️', '🕊', '🌚'])
             try:
-                await ABH(SendReactionRequest(
+                await _ABH(SendReactionRequest(
                     peer=peer,
                     msg_id=int(msg_id),
                     reaction=[ReactionEmoji(emoticon=emoji)],
