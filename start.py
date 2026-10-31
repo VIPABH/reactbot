@@ -4,7 +4,6 @@ from telethon.tl.types import MessageEntityCustomEmoji
 from telethon.tl.types import ChannelParticipantAdmin
 from telethon.errors import UserNotParticipantError
 from telethon.tl.types import ReactionEmoji
-from telethon.utils import get_peer_id
 from telethon.tl.types import Channel
 import asyncio, random, re, os, time
 from datetime import datetime
@@ -319,7 +318,6 @@ async def _filter(e):
     text = e.text
     id = e.sender_id
     sid = str(e.sender_id)
-    formatted_date = datetime.now().strftime("%Y %m %d")
     if text == '/start':return
     if id not in session:return
     step = session[id].get('step')
