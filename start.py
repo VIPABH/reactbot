@@ -101,8 +101,9 @@ def buttons(e):
     iid = e.sender_id
     if id not in info or not info[id].values():
         b = [
-            [Button.inline('اضف قناة', data='add_channle', style=green, icon=5222040745665379997)],
-            [Button.inline(f'رياكت', data='react', style=green, icon=5884106131822875141)]]
+            Button.inline('اضف قناة', data='add_channle', style=green, icon=5222040745665379997),
+            Button.inline(f'رياكت', data='react', style=green, icon=5884106131822875141)
+            ]
     else:
         b = [
             Button.inline('اضف قناة', data='add_channle', style=blue, icon=5222040745665379997),
@@ -263,7 +264,7 @@ async def react(event, chat=None, id=None, emojis=None):
                 peer = await ABH.get_entity(int(chat_id))
             except Exception as er:
                 if 'Could not find the input entity' in str(er):
-                    current_time = time.time()                        
+                    current_time = time.time()
                     if id not in hint_msg:
                         hint_msg[id] = current_time
                         _chat = await react_bot.get_entity(int(chat_id))
