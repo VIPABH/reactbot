@@ -467,8 +467,8 @@ async def _filter(e):
         chat = session[id]['temp']['chat']
         mid = session[id]['temp']['id']
         chat_entity = await ABH.get_entity(chat)
-        chat_id = get_peer_id(chat_entity)
-        status = await random_react(e, chat=chat_id, id=mid, emojis=valid_emojis)
+        if not chat_entity:return await e.reply('ما لكيت القناة الي طلبتها!')
+        status = await random_react(e, chat=chat_entity.id, id=mid, emojis=valid_emojis)
         caption = f"""
 ✅ **اكتملت العملية بنجاح**\n
 📍 اليوزر: ( `{chat}` )
