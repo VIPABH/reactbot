@@ -266,6 +266,7 @@ async def react(event, chat=None, id=None, emojis=None):
                 increment=True 
             ))
             views += 1
+        if not peer:return status
         if not reacts >= rdb:
             emoji = random.choice(list(emojis)) if emojis else random.choice(['❤️', '🕊', '🌚'])
             try:
@@ -287,11 +288,6 @@ async def random_react(event, chat=None, id=None, emojis=None):
     chat_id = chat if chat else event.chat_id
     msg_id = id if id else event.message.id
     status = [0, 0, set()]
-    formatted_date = datetime.now().strftime("%Y %m %d")
-    if formatted_date not in limit:
-        limit[formatted_date] = {}
-    if event.sender_id not in limit[formatted_date]:
-        limit[formatted_date][event.sender_id] = 3
     for ABH in ABHS:
         try:
             peer = await ABH.get_input_entity(int(chat_id))
@@ -302,6 +298,7 @@ async def random_react(event, chat=None, id=None, emojis=None):
             id=[int(msg_id)],
             increment=True 
         ))
+        if not peer:return status
         emoji = random.choice(emojis) if emojis else random.choice(['❤️', '🕊', '🌚'])
         try:
             await ABH(SendReactionRequest(
@@ -316,8 +313,6 @@ async def random_react(event, chat=None, id=None, emojis=None):
             status[1] += 1
             if 'Invalid reaction provided' in str(e):
                 status[2].add(emoji)
-    if status[0]>status[1]:
-        limit[formatted_date][event.sender_id] -= 1
     return status
 async def _filter(e):
     if not e.is_private:return
