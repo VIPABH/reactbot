@@ -100,26 +100,17 @@ back = [Button.inline('الرجوع', data='back', style=blue, icon=535275916194
 def buttons(e):
     id = str(e.sender_id)
     iid = e.sender_id
-    formatted_date = datetime.now().strftime("%Y %m %d")
-    if formatted_date not in limit:
-        limit[formatted_date] = {}
-    if iid not in limit[formatted_date]:
-        limit[formatted_date][iid] = 3
-    tries = limit[formatted_date][iid]
     if id not in info or not info[id].values():
         b = [
-            Button.inline('اضف قناة', data='add_channle', style=green, icon=5222040745665379997)]
-        if tries > 0:
-            b.append(Button.inline(f'رياكت ( 3\\{tries} )', data='react', style=green, icon=5884106131822875141))
+            [Button.inline('اضف قناة', data='add_channle', style=green, icon=5222040745665379997)],
+            [Button.inline(f'رياكت', data='react', style=green, icon=5884106131822875141)]]
     else:
         b = [
             Button.inline('اضف قناة', data='add_channle', style=blue, icon=5222040745665379997),
             Button.inline('حذف قناة', data='del_channle', style=red, icon=5408832111773757273),
             Button.inline('القنوات المضافة', data='list_channles', style=blue, icon=6323116093724428158),
             Button.inline('الاعدادات', data='settings', style=green, icon=5258096772776991776),
-            ]
-        if tries > 0:
-            b.append(Button.inline(f'رياكت ( 3\\{tries} )', data='react', style=green, icon=5884106131822875141))
+            Button.inline(f'رياكت ', data='react', style=green, icon=5884106131822875141)]
     return chunk_list(b)
 session = {}
 wfffp_button =[
@@ -205,16 +196,8 @@ async def start_callback(e):
         session[id] = {"step": data, 'chat': None}
         await e.edit('ارسل الان الايدي او اليوزر', buttons=back)
     elif data == 'react':
-        formatted_date = datetime.now().strftime("%Y %m %d")
-        if formatted_date not in limit:
-            limit[formatted_date] = {}
-        if id not in limit[formatted_date]:
-            limit[formatted_date][id] = 3
-        tries = limit[formatted_date][id]
-        if tries <= 0:
-            return await e.edit('عذرا محاولاتك انتهت حاول مجددا غدا', buttons=back)
         session[id] = {"step": data, 'chat': None}
-        return await e.edit('ارسل الان رابط رسالة \n يسمح لك ب 3 رياكتات يوميا وبعدها يتطلب من الاننتظار لليوم التالي', buttons=back)
+        return await e.edit('ارسل الان رابط رسالة \n **ملاحظة**حته تسوي رياكت تلقائي ضيف قناة عبر زر اضف قناة', buttons=back)
 @ABH.on(events.CallbackQuery(pattern=b'^(delete|channle|react_count|setreact|view_count)'))
 async def _(e):
     data = e.data.decode('utf-8')
@@ -320,11 +303,6 @@ async def random_react(event, chat=None, id=None, emojis=None):
     chat_id = chat if chat else event.chat_id
     msg_id = id if id else event.message.id
     status = [0, 0, set()]
-    formatted_date = datetime.now().strftime("%Y %m %d")
-    if formatted_date not in limit:
-        limit[formatted_date] = {}
-    if event.sender_id not in limit[formatted_date]:
-        limit[formatted_date][event.sender_id] = 3
     for ABH in ABHS:
         try:
             peer = await ABH.get_input_entity(int(chat_id))
@@ -345,6 +323,7 @@ async def random_react(event, chat=None, id=None, emojis=None):
             ))
         except Exception as view_err:
             pass
+        if not peer:return status
         emoji = random.choice(emojis) if emojis else random.choice(['❤️', '🕊', '🌚'])
         try:
             await ABH(SendReactionRequest(
@@ -359,10 +338,7 @@ async def random_react(event, chat=None, id=None, emojis=None):
             status[1] += 1
             if 'Invalid reaction provided' in str(e):
                 status[2].add(emoji)
-    if status[0] > status[1]:
-        limit[formatted_date][event.sender_id] -= 1
     return status
-limit = {}
 async def _filter(e):
     if not e.is_private:return
     text = e.text
@@ -495,6 +471,9 @@ async def _filter(e):
         chat_entity = await ABH.get_entity(chat)
         if not chat_entity:return await e.reply('ما لكيت القناة الي طلبتها!')
         status = await random_react(e, chat=chat_entity.id, id=mid, emojis=valid_emojis)
+        if 'temp' in session.get(id, {}):
+            del session[id]['temp']
+        del session[id]
         caption = f"""
 ✅ **اكتملت العملية بنجاح**\n
 📍 اليوزر: ( `{chat}` )
@@ -505,10 +484,5 @@ async def _filter(e):
             caption+= f'\n❌ التفاعلات الفاشلة: ( `{status[1]}` )'
         if status[2]:
             caption+= f'\n❌ ايموجيات مقفولة في القناة: ( {'و '.join(status[2])} )'
-        if status[0]>0:
-            limit[formatted_date][id] -= 1
-        if 'temp' in session.get(id, {}):
-            del session[id]['temp']
-        del session[id]
         return await status_msg.edit(caption)
 ABH.run_until_disconnected()
