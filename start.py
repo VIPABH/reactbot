@@ -381,7 +381,7 @@ async def _filter(e):
         owner = await get_channel_owner(chat)
         participants = await ABH.get_participants(chat, limit=0)
         if participants.total < 5:
-            return await e.reply("عذرا بس قناتك ما بيها مستخدمين هواي")
+            return await e.reply("عذرا بس قناتك ما بيها مستخدمين هواي", buttons=back)
         current_time = datetime.now(ZoneInfo("Asia/Baghdad")).strftime("%Y-%m-%d %H:%M:%S")
         info[sid][chan_key] = {
             'name': chat.title,
@@ -395,10 +395,14 @@ async def _filter(e):
             }
         users, users_id = await sync_users()
         if not await is_user_in_channel(chat.id, users_id[0]):
-            return await e.reply('عذرا صديقي اما تضيف الحسابات انت يدويا او ترفع ( @fristagent ) حته يضيفهم تلقائيا\nيحتاج صلاحية اضافه اعضاء فقط!')
+            return await e.reply('عذرا صديقي اما تضيف الحسابات انت يدويا او ترفع ( @fristagent ) حته يضيفهم تلقائيا\nيحتاج صلاحية اضافه اعضاء فقط!', buttons=back)
+        status = await add_users_to_channel(chat.id)
+        if not status:e.reply('فشل اضافة الاعضاء ممكن قناتك خاصة', buttons=back)
         chat_info[chan_key] = id
         save_data(all=True)
-        caption = f'**تم اضافة القناة بنجاح🌚**\nاسم القناة: ( {chat.title} )\nايدي القناة: ( `{chat.id}` )\n مالك القناة: ( {await ment(owner)} )\n ايديه: ( `{owner.id}` )\n عدد مشتركين القناة: ( `{participants.total}` )'
+        caption = f'**تم اضافة القناة بنجاح🌚**\nاسم القناة: ( {chat.title} )\nايدي القناة: ( `{chat.id}` )\n مالك القناة: ( {await ment(owner)} )\n ايديه: ( `{owner.id}` )\n عدد مشتركين القناة: ( `{participants.total}` )\n تم اضافة ( {status[0]} )'
+        if status[1]>0:
+            caption+=f'\nفشل اضافة ( {status[1]} )'
         url=f'https://t.me/{chat.username}' if chat.username else f'https://t.me/c/{str(chat.id).replace("-100", "")}/1'
         caption+=f'\nالرابط ( [{chat.title}]({url}) )'
         b = [Button.url(chat.title, url=url, style=blue, icon=5465374681915727405)]
