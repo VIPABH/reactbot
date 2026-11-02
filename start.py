@@ -207,7 +207,7 @@ async def start_callback(e):
             msg = await e.edit(caption)
             await msg.pin()
             await asyncio.sleep(15)
-        await (e.respond("ارسل الان الايدي او اليوزر\n ارفع المستخدم مشرف مع كامل الصلاحيات ( @fristagent )") if str(id) not in info else e.reply('ارسل الان الايدي او اليوزر\n ارفع المستخدم مشرف مع كامل الصلاحيات ( @fristagent )', buttons=back))
+        await (e.respond("ارسل الان الايدي او اليوزر\n ارفع المستخدم مشرف مع كامل الصلاحيات ( @fristagent )") if not str(id) in info else e.reply('ارسل الان الايدي او اليوزر\n ارفع المستخدم مشرف مع كامل الصلاحيات ( @fristagent )', buttons=back))
         session[id] = {"step": data, 'chat': None}
     elif data == 'react':
         session[id] = {"step": data, 'chat': None}
