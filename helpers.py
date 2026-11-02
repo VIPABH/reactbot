@@ -297,7 +297,8 @@ async def is_user_in_channel(chat, user):
         return True
     except UserNotParticipantError:
         return False  
-    except Exception:
+    except Exception as e:
+        print(e)
         return False
 async def add_users_to_channel(channel):
     success_count = 0
