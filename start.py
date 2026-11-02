@@ -393,6 +393,7 @@ async def _filter(e):
             'react_count': Max,
             'view_count': Max,
             }
+        users, users_id = await sync_users()
         if not await is_user_in_channel(chat.id, users_id[0]):
             return await e.reply('عذرا صديقي اما تضيف الحسابات انت يدويا او ترفع ( @fristagent ) حته يضيفهم تلقائيا\nيحتاج صلاحية اضافه اعضاء فقط!')
         chat_info[chan_key] = id
