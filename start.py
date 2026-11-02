@@ -204,10 +204,10 @@ async def start_callback(e):
 البوت مجهز ب نظام حماية حديث
 تجربة ممتعة - مطور البوت @k_4x1❤
 '''
-            msg = await e.edit(caption, buttons=back)
+            msg = await e.edit(caption)
             await msg.pin()
             await asyncio.sleep(15)
-        await e.respond('ارسل الان الايدي او اليوزر', buttons=back)
+        await e.respond if not str(id) in info else e.reply('ارسل الان الايدي او اليوزر', buttons=back)
         session[id] = {"step": data, 'chat': None}
     elif data == 'react':
         session[id] = {"step": data, 'chat': None}
