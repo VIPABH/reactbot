@@ -304,7 +304,7 @@ async def is_user_in_channel(chat, user):
     except Exception as e:
         print(f"⚠️ خطأ غير متوقع في is_user_in_channel: {type(e).__name__} - {e}")
         return False
-def add_users_to_channel(channel):
+async def add_users_to_channel(channel):
     success_count = 0
     failed_count = 0
     for user_id in users_id:
