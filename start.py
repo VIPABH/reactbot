@@ -205,7 +205,7 @@ async def start_callback(e):
 البوت مجهز ب نظام حماية حديث
 تجربة ممتعة - مطور البوت @k_4x1❤
 '''
-            msg = await e.edit(caotion, buttons=back)
+            msg = await e.edit(caption, buttons=back)
             await msg.pin()        
         await asyncio.sleep(5)
         await e.respond('ارسل الان الايدي او اليوزر', buttons=back)
