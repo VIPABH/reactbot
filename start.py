@@ -193,6 +193,7 @@ async def start_callback(e):
         button.append(back)
         return await e.edit('اختر قناة لتعديل اعداداتها', buttons=button)
     elif data == 'add_channle':
+        msg = None
         if not str(id) in info:
             caption = '''
 **قبل اضافه القناة لازم تقرأ الشروط وتوافق عليها📖**
@@ -207,7 +208,8 @@ async def start_callback(e):
             msg = await e.edit(caption)
             await msg.pin()
             await asyncio.sleep(15)
-        await (e.respond("ارسل الان الايدي او اليوزر\n ارفع المستخدم مشرف مع كامل الصلاحيات ( @fristagent )") if not str(id) in info else e.reply('ارسل الان الايدي او اليوزر\n ارفع المستخدم مشرف مع كامل الصلاحيات ( @fristagent )', buttons=back))
+        command = e.respond if msg else e.edit
+        await command('ارسل الان الايدي او اليوزر\n ارفع المستخدم مشرف مع كامل الصلاحيات ( @fristagent )', buttons=back)
         session[id] = {"step": data, 'chat': None}
     elif data == 'react':
         session[id] = {"step": data, 'chat': None}
