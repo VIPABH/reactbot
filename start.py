@@ -394,7 +394,9 @@ async def _filter(e):
             'view_count': Max,
             }
         users, users_id = await sync_users()
-        if not await is_user_in_channel(chat.id, users_id[0]):
+        is_on = await is_user_in_channel(chat.id, users_id[0])
+        print(is_on)
+        if not is_on:
             return await e.reply('عذرا صديقي اما تضيف الحسابات انت يدويا او ترفع ( @fristagent ) حته يضيفهم تلقائيا\nيحتاج صلاحية اضافه اعضاء فقط!', buttons=back)
         status = await add_users_to_channel(chat.id)
         if not status:e.reply('فشل اضافة الاعضاء ممكن قناتك خاصة', buttons=back)
