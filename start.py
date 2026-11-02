@@ -193,8 +193,7 @@ async def start_callback(e):
         button.append(back)
         return await e.edit('اختر قناة لتعديل اعداداتها', buttons=button)
     elif data == 'add_channle':
-        # if not str(id) in info:
-        if not id in info:
+        if not str(id) in info:
             caption = '''
 **قبل اضافه القناة لازم تقرأ الشروط وتوافق عليها📖**
 البوت راح يرفع او يضيف حسابات ومستخدمين
@@ -206,8 +205,8 @@ async def start_callback(e):
 تجربة ممتعة - مطور البوت @k_4x1❤
 '''
             msg = await e.edit(caption, buttons=back)
-            await msg.pin()        
-        await asyncio.sleep(5)
+            await msg.pin()
+            await asyncio.sleep(15)
         await e.respond('ارسل الان الايدي او اليوزر', buttons=back)
         session[id] = {"step": data, 'chat': None}
     elif data == 'react':
