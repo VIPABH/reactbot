@@ -286,3 +286,14 @@ async def try_forward(event, chat=None, id=None, to=None, drop_author=None):
         return True
     except Exception as e:
         return False
+async def is_user_in_channel(chat, user):
+    try:
+        participant = await ABH(GetParticipantRequest(
+            channel=chat,
+            participant=user
+        ))
+        return True
+    except UserNotParticipantError:
+        return False  
+    except Exception:
+        return False
