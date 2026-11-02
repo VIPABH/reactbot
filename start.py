@@ -500,7 +500,6 @@ import random
 from telethon import events
 from telethon.tl.functions.messages import SendReactionRequest, GetMessagesViewsRequest
 from telethon.tl.types import ReactionEmoji, PeerChannel
-from ABH import ABH, ABHS
 
 # الروابط المدعومة: https://t.me/c/123456789/10 أو https://t.me/username/10
 LINK_PATTERN = r"(?:https?://)?t\.me/(?:c/)?([^/]+)/(\d+)"
