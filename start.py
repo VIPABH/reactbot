@@ -193,8 +193,23 @@ async def start_callback(e):
         button.append(back)
         return await e.edit('اختر قناة لتعديل اعداداتها', buttons=button)
     elif data == 'add_channle':
+        # if not str(id) in info:
+        if not id in info:
+            caption = '''
+**قبل اضافه القناة لازم تقرأ الشروط وتوافق عليها📖**
+البوت راح يرفع او يضيف حسابات ومستخدمين
+1- ممنوع طرد او حظر اي مستخدم 
+2- ممنوع تعديل صلاحيات اي بوت او مستخدم
+3- ممنوع نقل ملكية القناة لأي حساب
+مخالفة القوانين يعرضك للحظر من الخدمه وحظر قناتك
+البوت مجهز ب نظام حماية حديث
+تجربة ممتعة - مطور البوت @k_4x1❤
+'''
+            msg = await e.edit(caotion, buttons=back)
+            await msg.pin()        
+        await asyncio.sleep(5)
+        await e.respond('ارسل الان الايدي او اليوزر', buttons=back)
         session[id] = {"step": data, 'chat': None}
-        await e.edit('ارسل الان الايدي او اليوزر', buttons=back)
     elif data == 'react':
         session[id] = {"step": data, 'chat': None}
         return await e.edit('ارسل الان رابط رسالة \n **ملاحظة**حته تسوي رياكت تلقائي ضيف قناة عبر زر اضف قناة', buttons=back)
@@ -245,7 +260,6 @@ emoji = [
     "🤡", "🥱", "😍", "🐳", "❤️‍🔥", "🌚", "🌭", "💯", "⚡️", "🍌", "🏆", "😡", "😘", "🙊", "😎", "👾", "🤷‍♂️",
     "🤷‍♀️", "🤷", "☃️", "🗿", "🆒", "💘", "🙈", "😇", "😨", "🤝", "✍️", "🤗", "🫡", "🎅", "🎄", "😴", "😭", "🤓", "👻",
     "👨‍💻", "👀", "🎃", "🙈", "💔", "🤨", "😐", "🍓", "🍾", "💋", "🖕", "😈"]
-hint_msg = {}
 async def react(event, chat=None, id=None, emojis=None):
     chat_id = chat if chat else str(event.chat_id)
     msg_id = id if id else event.message.id
@@ -263,16 +277,6 @@ async def react(event, chat=None, id=None, emojis=None):
             try:
                 peer = await _ABH.get_entity(int(chat_id))
             except Exception as er:
-                if 'Could not find the input entity' in str(er):
-                    current_time = time.time()
-                    if id not in hint_msg:
-                        hint_msg[id] = current_time
-                        _chat = await ABH.get_entity(int(chat_id))
-                        await ABH.send_message(int(id), f'عذرا صديقي القناة محظوره ماكدر اتفاعل بيها ( {_chat.title} )\nاحذفها وجرب تضيف قناة اخرى')
-                    else:
-                        if (current_time - hint_msg[id]) > 300:
-                            hint_msg[id] = current_time
-                            await ABH.send_message(int(id), f'عذرا صديقي القناة محظوره ماكدر اتفاعل بيها  ( {_chat.title} )\nاحذفها وجرب تضيف قناة اخرى')
                 continue
         if not views >= vdb:
             await _ABH(GetMessagesViewsRequest(
@@ -375,6 +379,8 @@ async def _filter(e):
             return await e.reply("❌ البوت غير موجود في القناة! يرجى إضافته ورفعه مشرفاً أولاً.", buttons=back)
         owner = await get_channel_owner(chat)
         participants = await ABH.get_participants(chat, limit=0)
+        if participants.total < 5:
+            return await e.reply("عذرا بس قناتك ما بيها مستخدمين هواي")
         current_time = datetime.now(ZoneInfo("Asia/Baghdad")).strftime("%Y-%m-%d %H:%M:%S")
         info[sid][chan_key] = {
             'name': chat.title,
@@ -386,6 +392,7 @@ async def _filter(e):
             'react_count': Max,
             'view_count': Max,
             }
+        
         chat_info[chan_key] = id
         save_data(all=True)
         caption = f'**تم اضافة القناة بنجاح🌚**\nاسم القناة: ( {chat.title} )\nايدي القناة: ( `{chat.id}` )\n مالك القناة: ( {await ment(owner)} )\n ايديه: ( `{owner.id}` )\n عدد مشتركين القناة: ( `{participants.total}` )'
@@ -393,13 +400,13 @@ async def _filter(e):
         caption+=f'\nالرابط ( [{chat.title}]({url}) )'
         b = [Button.url(chat.title, url=url, style=blue, icon=5465374681915727405)]
         button = [b, back]
-        del session[id]
         photo_file = None
         if chat.photo:
             photo_bytes = await ABH.download_profile_photo(chat, file=bytes)
             if photo_bytes:
                 photo_file = BytesIO(photo_bytes)
                 photo_file.name = "photo.jpg"
+        del session[id]
         if photo_file:
             return await e.reply(caption, file=photo_file, buttons=button)
         return await e.reply(caption, buttons=button)
@@ -457,6 +464,7 @@ async def _filter(e):
                 else: 
                     uninvailde.add(t)
         caption = 'يجري عمل الرياكت...'
+        print_all()
         if uninvailde:caption+=f'\n تم تخطي ايموجيات غير صالحه ( {"و ".join(uninvailde)} )'
         status_msg = await e.reply(caption)
         chat = session[id]['temp']['chat']
