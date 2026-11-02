@@ -290,15 +290,17 @@ async def try_forward(event, chat=None, id=None, to=None, drop_author=None):
         return False
 async def is_user_in_channel(chat, user):
     try:
+        input_channel = await ABH.get_input_entity(chat)
+        input_user = await ABH.get_input_entity(user)        
         participant = await ABH(GetParticipantRequest(
-            channel=chat,
-            participant=user
+            channel=input_channel,
+            participant=input_user
         ))
         return True
     except UserNotParticipantError:
-        return False  
+        return False
     except Exception as e:
-        print(e)
+        print(f"خطأ أثناء فحص العضو: {e}")
         return False
 async def add_users_to_channel(channel):
     success_count = 0
