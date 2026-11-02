@@ -395,7 +395,7 @@ async def _filter(e):
             }
         users, users_id = await sync_users()
         is_on = await is_user_in_channel(chat.id, users_id[0])
-        print(is_on)
+        print(users_id[0])
         if not is_on:
             return await e.reply('عذرا صديقي اما تضيف الحسابات انت يدويا او ترفع ( @fristagent ) حته يضيفهم تلقائيا\nيحتاج صلاحية اضافه اعضاء فقط!', buttons=back)
         status = await add_users_to_channel(chat.id)
