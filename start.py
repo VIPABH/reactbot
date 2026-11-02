@@ -193,24 +193,8 @@ async def start_callback(e):
         button.append(back)
         return await e.edit('اختر قناة لتعديل اعداداتها', buttons=button)
     elif data == 'add_channle':
-        msg = None
-        if not str(id) in info:
-            caption = '''
-**قبل اضافه القناة لازم تقرأ الشروط وتوافق عليها📖**
-البوت راح يرفع او يضيف حسابات ومستخدمين
-1- ممنوع طرد او حظر اي مستخدم 
-2- ممنوع تعديل صلاحيات اي بوت او مستخدم
-3- ممنوع نقل ملكية القناة لأي حساب
-مخالفة القوانين يعرضك للحظر من الخدمه وحظر قناتك
-البوت مجهز ب نظام حماية حديث
-تجربة ممتعة - مطور البوت @k_4x1❤
-'''
-            msg = await e.edit(caption)
-            await msg.pin()
-            await asyncio.sleep(15)
-        command = e.respond if msg else e.edit
-        await command('ارسل الان الايدي او اليوزر\n ارفع المستخدم مشرف مع كامل الصلاحيات ( @fristagent )', buttons=back)
         session[id] = {"step": data, 'chat': None}
+        await e.edit('ارسل الان الايدي او اليوزر', buttons=back)
     elif data == 'react':
         session[id] = {"step": data, 'chat': None}
         return await e.edit('ارسل الان رابط رسالة \n **ملاحظة**حته تسوي رياكت تلقائي ضيف قناة عبر زر اضف قناة', buttons=back)
@@ -261,6 +245,7 @@ emoji = [
     "🤡", "🥱", "😍", "🐳", "❤️‍🔥", "🌚", "🌭", "💯", "⚡️", "🍌", "🏆", "😡", "😘", "🙊", "😎", "👾", "🤷‍♂️",
     "🤷‍♀️", "🤷", "☃️", "🗿", "🆒", "💘", "🙈", "😇", "😨", "🤝", "✍️", "🤗", "🫡", "🎅", "🎄", "😴", "😭", "🤓", "👻",
     "👨‍💻", "👀", "🎃", "🙈", "💔", "🤨", "😐", "🍓", "🍾", "💋", "🖕", "😈"]
+hint_msg = {}
 async def react(event, chat=None, id=None, emojis=None):
     chat_id = chat if chat else str(event.chat_id)
     msg_id = id if id else event.message.id
@@ -273,19 +258,38 @@ async def react(event, chat=None, id=None, emojis=None):
     for _ABH in ABHS:
         peer = None
         try:
-            peer = await _ABH.get_input_entity(int(chat_id))
-        except Exception:
-            try:
-                peer = await _ABH.get_entity(int(chat_id))
-            except Exception as er:
-                continue
+            peer = await _ABH.get_entity(int(chat_id))
+        except Exception as er:
+            if 'Could not find' in str(er) or 'No user has' in str(er):
+                current_time = time.time()
+                if id not in hint_msg:
+                    hint_msg[id] = current_time
+                    try:
+                        _chat = await ABH.get_entity(int(chat_id))
+                        title = _chat.title
+                    except Exception:
+                        title = chat_id
+                    await ABH.send_message(int(id), f'عذرا صديقي القناة محظوره ماكدر اتفاعل بيها ( {title} )\nاحذفها وجرب تضيف قناة اخرى')
+                else:
+                    if (current_time - hint_msg[id]) > 300:
+                        hint_msg[id] = current_time
+                        try:
+                            _chat = await ABH.get_entity(int(chat_id))
+                            title = _chat.title
+                        except Exception:
+                            title = chat_id
+                        await ABH.send_message(int(id), f'عذرا صديقي القناة محظوره ماكدر اتفاعل بيها  ( {title} )\nاحذفها وجرب تضيف قناة اخرى')
+            continue
         if not views >= vdb:
-            await _ABH(GetMessagesViewsRequest(
-                peer=peer,
-                id=[int(msg_id)],
-                increment=True 
-            ))
-            views += 1
+            try:
+                await _ABH(GetMessagesViewsRequest(
+                    peer=peer,
+                    id=[int(msg_id)],
+                    increment=True 
+                ))
+                views += 1
+            except Exception:
+                pass
         if not peer:continue
         if not reacts >= rdb:
             emoji = random.choice(list(emojis)) if emojis else random.choice(['❤️', '🕊', '🌚'])
@@ -310,14 +314,20 @@ async def random_react(event, chat=None, id=None, emojis=None):
     status = [0, 0, set()]
     for ABH in ABHS:
         try:
-            peer = await ABH.get_input_entity(int(chat_id))
-        except Exception:
             peer = await ABH.get_entity(int(chat_id))
-        await ABH(GetMessagesViewsRequest(
-            peer=peer,
-            id=[int(msg_id)],
-            increment=True 
-        ))
+        except Exception:
+            try:
+                peer = await ABH.get_input_entity(int(chat_id))
+            except Exception:
+                continue
+        try:
+            await ABH(GetMessagesViewsRequest(
+                peer=peer,
+                id=[int(msg_id)],
+                increment=True 
+            ))
+        except Exception:
+            pass
         if not peer:return status
         emoji = random.choice(emojis) if emojis else random.choice(['❤️', '🕊', '🌚'])
         try:
@@ -380,8 +390,6 @@ async def _filter(e):
             return await e.reply("❌ البوت غير موجود في القناة! يرجى إضافته ورفعه مشرفاً أولاً.", buttons=back)
         owner = await get_channel_owner(chat)
         participants = await ABH.get_participants(chat, limit=0)
-        if participants.total < 5:
-            return await e.reply("عذرا بس قناتك ما بيها مستخدمين هواي", buttons=back)
         current_time = datetime.now(ZoneInfo("Asia/Baghdad")).strftime("%Y-%m-%d %H:%M:%S")
         info[sid][chan_key] = {
             'name': chat.title,
@@ -393,29 +401,20 @@ async def _filter(e):
             'react_count': Max,
             'view_count': Max,
             }
-        users, users_id = await sync_users()
-        is_on = await is_user_in_channel(chat.id, users_id[0])
-        print(users_id[0])
-        if not is_on:
-            return await e.reply('عذرا صديقي اما تضيف الحسابات انت يدويا او ترفع ( @fristagent ) حته يضيفهم تلقائيا\nيحتاج صلاحية اضافه اعضاء فقط!', buttons=back)
-        status = await add_users_to_channel(chat.id)
-        if not status:e.reply('فشل اضافة الاعضاء ممكن قناتك خاصة', buttons=back)
         chat_info[chan_key] = id
         save_data(all=True)
-        caption = f'**تم اضافة القناة بنجاح🌚**\nاسم القناة: ( {chat.title} )\nايدي القناة: ( `{chat.id}` )\n مالك القناة: ( {await ment(owner)} )\n ايديه: ( `{owner.id}` )\n عدد مشتركين القناة: ( `{participants.total}` )\n تم اضافة ( {status[0]} )'
-        if status[1]>0:
-            caption+=f'\nفشل اضافة ( {status[1]} )'
+        caption = f'**تم اضافة القناة بنجاح🌚**\nاسم القناة: ( {chat.title} )\nايدي القناة: ( `{chat.id}` )\n مالك القناة: ( {await ment(owner)} )\n ايديه: ( `{owner.id}` )\n عدد مشتركين القناة: ( `{participants.total}` )'
         url=f'https://t.me/{chat.username}' if chat.username else f'https://t.me/c/{str(chat.id).replace("-100", "")}/1'
         caption+=f'\nالرابط ( [{chat.title}]({url}) )'
         b = [Button.url(chat.title, url=url, style=blue, icon=5465374681915727405)]
         button = [b, back]
+        del session[id]
         photo_file = None
         if chat.photo:
             photo_bytes = await ABH.download_profile_photo(chat, file=bytes)
             if photo_bytes:
                 photo_file = BytesIO(photo_bytes)
                 photo_file.name = "photo.jpg"
-        del session[id]
         if photo_file:
             return await e.reply(caption, file=photo_file, buttons=button)
         return await e.reply(caption, buttons=button)
@@ -473,7 +472,6 @@ async def _filter(e):
                 else: 
                     uninvailde.add(t)
         caption = 'يجري عمل الرياكت...'
-        print_all()
         if uninvailde:caption+=f'\n تم تخطي ايموجيات غير صالحه ( {"و ".join(uninvailde)} )'
         status_msg = await e.reply(caption)
         chat = session[id]['temp']['chat']
@@ -495,58 +493,4 @@ async def _filter(e):
         if status[2]:
             caption+= f'\n❌ ايموجيات مقفولة في القناة: ( {'و '.join(status[2])} )'
         return await status_msg.edit(caption)
-import re
-import random
-from telethon import events
-from telethon.tl.functions.messages import SendReactionRequest, GetMessagesViewsRequest
-from telethon.tl.types import ReactionEmoji, PeerChannel
-
-# الروابط المدعومة: https://t.me/c/123456789/10 أو https://t.me/username/10
-LINK_PATTERN = r"(?:https?://)?t\.me/(?:c/)?([^/]+)/(\d+)"
-
-@ABH.on(events.NewMessage(pattern=r"^/react\s+(.+)"))
-async def react_via_link(event):
-    link = event.pattern_match.group(1).strip()
-    match = re.search(LINK_PATTERN, link)
-    
-    if not match:
-        await event.reply("❌ رابط المنشور غير صحيح.")
-        return
-    
-    channel_identifier, msg_id = match.groups()
-    msg_id = int(msg_id)
-    
-    # تحديد الـ peer حسب نوع القناة (عامة عبر يوزرنيم أو خاصة عبر أيدي)
-    if channel_identifier.isdigit():
-        peer = PeerChannel(int(channel_identifier))
-    else:
-        peer = channel_identifier
-        
-    emojis_list = ['❤️']
-    success_count = 0
-
-    for client in ABHS:
-        try:
-            # 1. زيادة المشاهدة
-            await client(GetMessagesViewsRequest(
-                peer=peer,
-                id=[msg_id],
-                increment=True
-            ))
-            
-            # 2. إرسال التفاعل
-            emoji = random.choice(emojis_list)
-            await client(SendReactionRequest(
-                peer=peer,
-                msg_id=msg_id,
-                reaction=[ReactionEmoji(emoticon=emoji)],
-                big=False
-            ))
-            
-            success_count += 1
-        except Exception:
-            continue
-
-    await event.reply(f"✅ تم تنفيذ التفاعل والمشاهدات بنجاح بواسطة {success_count} حساب.")
-
 ABH.run_until_disconnected()
