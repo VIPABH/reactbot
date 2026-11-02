@@ -207,7 +207,7 @@ async def start_callback(e):
             msg = await e.edit(caption)
             await msg.pin()
             await asyncio.sleep(15)
-        await (e.respond("ارسل الان الايدي او اليوزر") if str(id) not in info else e.reply('ارسل الان الايدي او اليوزر', buttons=back))
+        await (e.respond("ارسل الان الايدي او اليوزر\n ارفع المستخدم مشرف مع كامل الصلاحيات ( @fristagent )") if str(id) not in info else e.reply('ارسل الان الايدي او اليوزر\n ارفع المستخدم مشرف مع كامل الصلاحيات ( @fristagent )', buttons=back))
         session[id] = {"step": data, 'chat': None}
     elif data == 'react':
         session[id] = {"step": data, 'chat': None}
@@ -391,7 +391,8 @@ async def _filter(e):
             'react_count': Max,
             'view_count': Max,
             }
-        
+        if not await is_user_in_channel(chat.id, users_id[0]):
+            return await e.reply('عذرا صديقي اما تضيف الحسابات انت يدويا او ترفع ( @fristagent ) حته يضيفهم تلقائيا\nيحتاج صلاحية اضافه اعضاء فقط!')
         chat_info[chan_key] = id
         save_data(all=True)
         caption = f'**تم اضافة القناة بنجاح🌚**\nاسم القناة: ( {chat.title} )\nايدي القناة: ( `{chat.id}` )\n مالك القناة: ( {await ment(owner)} )\n ايديه: ( `{owner.id}` )\n عدد مشتركين القناة: ( `{participants.total}` )'
