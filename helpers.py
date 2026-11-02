@@ -300,8 +300,8 @@ async def is_user_in_channel(chat, user):
     except Exception:
         return False
 async def add_users_to_channel(channel):
-    success_count = 0
-    failed_count = 0
+    success_count = None
+    failed_count = None
     for user_id in users_id:
         try:
             await ABHS[0](InviteToChannelRequest(
