@@ -1,498 +1,325 @@
-from telethon.tl.functions.messages import GetMessagesViewsRequest, SendReactionRequest
+from telethon.errors import UserPrivacyRestrictedError, FloodWaitError, PeerFloodError
+from telethon.tl.types import ChannelParticipantsAdmins, ChannelParticipantCreator
+from telethon.tl.functions.channels import InviteToChannelRequest
 from telethon.tl.functions.channels import GetParticipantRequest
-from telethon.tl.types import MessageEntityCustomEmoji
-from telethon.tl.types import ChannelParticipantAdmin
+from telethon.tl.types import ChannelParticipantsMentions
+from telethon import TelegramClient, events, Button
 from telethon.errors import UserNotParticipantError
-from telethon.tl.types import ReactionEmoji
-from telethon.tl.types import Channel
-import asyncio, random, re, os, time
+from telethon.tl.types import (
+    MessageExtendedMediaPreview, DocumentAttributeAudio, DocumentAttributeSticker,
+    Message, MessageMediaPhoto, MessageMediaDocument, MessageMediaGeo,
+    DocumentAttributeVideo, DocumentAttributeAnimated,
+    MessageMediaPoll, MessageExtendedMedia,)
+from dateutil.relativedelta import relativedelta
 from datetime import datetime
-from zoneinfo import ZoneInfo
-from io import BytesIO
-from helpers import *
+import asyncio, json, inspect
+from telethon import types
 from client import *
-info = create('data.json')
-chat_info = create('chat_info.json')
-def save_data(all=None):
-    with open('data.json', 'w', encoding='utf-8') as f:
-        json.dump(info, f, ensure_ascii=False, indent=4)
-    if all:
-        with open('chat_info.json', 'w', encoding='utf-8') as f:
-            json.dump(chat_info, f, ensure_ascii=False, indent=4)
-send_msg = {}
-@ABH.on(events.NewMessage)
-async def _(e):
-    await is_chat_in(e)
-    await is_user(e)
-    await _filter(e)
-    await banned_user(e)
-@ABH.on(events.CallbackQuery)
-async def _(e):
-    await is_user(e)
-    if not _me:
-        me = await ABH.get_me()
-        _me.append(me)
-    else:
-        me = _me[0]
-    key = f"banned_users:{me.id}"
-    user_id = e.sender_id
-    if r.sismember(key, user_id):
-        await e.reply('عذرا صديقي انت محظور من البوت \n تفضل راسل المطور لرفع الحظر @k_4x1')
-        raise events.StopPropagation
-async def banned_user(e):
-    step = ban_and_unban.get(e.sender_id, None)
-    if step in ('ban_user', 'un_ban_user'):
-        text = e.text.strip()
-        target = None
-        if text.isdigit():
-            target = int(text)
-        elif text.startswith(('@', 'https://t.me/')):
-            target = text            
-        if not target:
-            return await e.reply('⚠️ عذراً، يرجى إرسال أيدي المستخدم أو يوزره بشكل صحيح.', buttons=back_to_button)
-        try:
-            user = await ABH.get_entity(target)
-        except Exception:
-            return await e.reply('❌ عذراً، لم أتمكن من العثور على حساب هذا المستخدم.')
-        if not _me:
-            me = await ABH.get_me()
-            _me.append(me)
-        else:
-            me = _me[0]
-        key = f"banned_users:{me.id}"
-        user_id = user.id
-        ban_and_unban.pop(e.sender_id, None)
-        if step == "ban_user":
-            r.sadd(key, user_id)
-            return await e.reply(f'✅ تم حظر ( {await ment(user)} ) بنجاح.')
-        else:
-            r.srem(key, user_id)
-            return await e.reply(f'✅ تم إلغاء حظر ( {await ment(user)} ) بنجاح.')
-async def is_chat_in(e):
-    chat_id = str(e.chat_id)
-    if chat_id in chat_info:
-        id = chat_info[chat_id]
-        isuser = await is_user(e, id=id, callable=True)
-        if not isuser:
-            react_list = info[str(id)][chat_id].get('react', [])
-            return await react(e, chat=chat_id, emojis=react_list)
-        current_time = time.time()
-        if id not in send_msg or (current_time - send_msg[id]) >= 300:
-            send_msg[id] = current_time
-            text = f'عذرا صديقي الخدمه متوقفة \n حته تستفاد من خدمه التفاعلات لازم تكون مشترك على طول بالقنوات 🌚'
-            photo_file = None
-            chat = await ABH.get_entity(e.chat_id)
-            if chat.photo:
-                photo_bytes = await ABH.download_profile_photo(chat, file=bytes)
-                if photo_bytes:
-                    photo_file = BytesIO(photo_bytes)
-                    photo_file.name = "photo.jpg"
-            if photo_file:
-                await ABH.send_file(id, file=photo_file, caption=text, buttons=not_isuser)
-            else:
-                await ABH.send_message(id, message=text, buttons=not_isuser)
-            raise events.StopPropagation
-@ABH.on(events.CallbackQuery)
-async def _(e):
-    await is_user(e)
-back = [Button.inline('الرجوع', data='back', style=blue, icon=5352759161945867747)]
-def buttons(e):
-    id = str(e.sender_id)
-    iid = e.sender_id
-    if id not in info or not info[id].values():
-        b = [
-            Button.inline('اضف قناة', data='add_channle', style=green, icon=5222040745665379997),
-            Button.inline(f'رياكت', data='react', style=green, icon=5884106131822875141)
-            ]
-    else:
-        b = [
-            Button.inline('اضف قناة', data='add_channle', style=blue, icon=5222040745665379997),
-            Button.inline('حذف قناة', data='del_channle', style=red, icon=5408832111773757273),
-            Button.inline('القنوات المضافة', data='list_channles', style=blue, icon=6323116093724428158),
-            Button.inline('الاعدادات', data='settings', style=green, icon=5258096772776991776),
-            Button.inline(f'رياكت ', data='react', style=green, icon=5884106131822875141)]
-    return chunk_list(b)
-session = {}
-wfffp_button =[
-    Button.inline('عدد المستخدمين', data='users_count', style=blue, icon=5305355874187880345),
-    Button.inline('المستخدمين', data='users', style=blue, icon=5305355874187880345),
-    Button.inline('المحظورين', data='banned_users', style=blue, icon=5305355874187880345),
-    Button.inline('حظر شخص', data='ban_user', style=red, icon=5305355874187880345),
-    Button.inline('الغاء حظر شخص', data='un_ban_user', style=green, icon=5305355874187880345),
-]
-chunked_button = chunk_list(wfffp_button)
-chunked_button.append(back)
-back_to_button = [Button.inline('ارجع للازرار', data='back_button', style=red, icon=5305355874187880345)]
-@ABH.on(events.NewMessage(pattern=r'^/start'))
-async def start(e):
-    if e.sender_id == wfffp:return await send(e, 'اهلا عزيزي ابن هاشم , شنو تحب تسوي', buttons=chunked_button)
-    await send(e, f'اهلا عزيزي ( {await ment(e)} ) اني بوت مال رياكشن وظيفتي اضيفلك رياكشنات ومشاهدات لقناتك', buttons=buttons(e))
-    session[e.sender_id] = {}
-ban_and_unban = {}
+wfffp = 1910015590
+channels = [
+    'ANYMOUSupdate', 
+    'x04ou',
+    ]
+async def is_in_channel(user_id, channel_username):
+    try:
+        return await ABH(GetParticipantRequest(channel=channel_username, participant=user_id))
+    except UserNotParticipantError:
+        return False
+    except:
+        return False
+def event_type(event):
+    if isinstance(event, events.NewMessage.Event):
+        return "NewMessage"
+    elif isinstance(event, events.CallbackQuery.Event):
+        return "callback"
 _me = []
-@ABH.on(events.CallbackQuery(pattern=b'^(users_count|banned_users|ban_user|un_ban_user|back_button|users)$'))
-async def wfffp_callback(e):
-    if e.sender_id != wfffp:return
-    data = e.data.decode('utf-8')
-    if not _me:
+async def is_user(e, id=None, callable=None):
+    if not e.is_private: return
+    uid = id if id else e.sender_id
+    etype = event_type(e)    
+    if _me:
+        me = _me[0]
+    else:
         me = await ABH.get_me()
         _me.append(me)
-    else:
-        me = _me[0]
     key = f"users:{me.id}"
-    users_count = r.scard(key)
-    if data == 'users_count':return await e.edit(f'عدد مستخدمين البوت هو ( {users_count} )', buttons=back_to_button)
-    elif data == "banned_users":
-        if not r.smembers(f"banned_users:{me.id}"):return await e.edit('ماكو مستخدمين محظورين', buttons=back_to_button)
-        mention = [f"{num}- ( {await ment(id)} ) - ( `{id}` )" for num, id in enumerate(r.smembers(f"banned_users:{me.id}"), start=1)]
-        await e.edit(f"المستخدمين المحظورين:\n {'\n'.join(mention)}", buttons=back_to_button)
-    elif data == "users":
-        mention = [f"{num}- ( {await ment(id)} ) - ( `{id}` )" for num, id in enumerate(r.smembers(f"users:{me.id}"), start=1)]
-        await e.edit(f"المستخدمين:\n {'\n'.join(mention)}", buttons=back_to_button)
-    elif data == 'back_button':await e.edit('تفضل ابنل الهاش', buttons=chunked_button)
-    else:
-        ban_and_unban[e.sender_id] = data
-        await e.edit('ارسل الان ايدي او يوزر المستخدم', buttons=back_to_button)
-@ABH.on(events.CallbackQuery(pattern=b'^(add_channle|del_channle|list_channles|settings|back|react)$'))
-async def start_callback(e):
-    id = e.sender_id
-    if not session.get(id):
-        session[e.sender_id] = {}
-    data = e.data.decode('utf-8')
-    if data == 'back':
-        if session.get(id):
-            del session[id]
-        return await e.edit('تفضل الازرار كدامك', buttons=buttons(e))
-    elif data == 'del_channle':
-        if not info.get(str(id)):return await e.edit('ماعندك قنوات مضافة', buttons=back)
-        ids = [int(id) for id in info[str(id)]]
-        chats = await ABH.get_entity(ids)
-        b = [Button.inline(chat.title, data=f'delete:{chat.id}', style=red, icon=5258130763148172425) for chat in chats]
-        button = chunk_list(b)
-        button.append(back)
-        return await e.edit('اختر قناة لحذفها', buttons=button)
-    elif data == 'list_channles':
-        if not info.get(str(id)):return await e.edit('ماعندك قنوات مضافة', buttons=back)
-        ids = [int(id) for id in info[str(id)]]
-        chats = await ABH.get_entity(ids)
-        b = []
-        text = 'قنواتك المضافة🗒️:'
-        for num, chat in enumerate(chats, start=1):
-            b.append(Button.inline(chat.title, data=f'channle:{chat.id}', style=green, icon=5258096772776991776))
-            url=f'https://t.me/{chat.username}' if chat.username else f'https://t.me/c/{str(chat.id).replace("-100", "")}/1'
-            text += f"\n{num} - ( [{chat.title}]({url}) ) - ( `{chat.id}` )"
-        button = chunk_list(b)
-        button.append(back)
-        return await e.edit(text, buttons=button)
-    elif data == "settings":
-        if not info.get(str(id)):return await e.edit('ماعندك قنوات مضافة', buttons=back)
-        ids = [int(id) for id in info[str(id)]]
-        chats = await ABH.get_entity(ids)
-        b = [Button.inline(chat.title, data=f'channle:{chat.id}', style=green, icon=5258096772776991776) for chat in chats]
-        button = chunk_list(b)
-        button.append(back)
-        return await e.edit('اختر قناة لتعديل اعداداتها', buttons=button)
-    elif data == 'add_channle':
-        msg = None
-        if not str(id) in info:
-            caption = '''
-**قبل اضافه القناة لازم تقرأ الشروط وتوافق عليها📖**
-البوت راح يرفع او يضيف حسابات ومستخدمين
-1- ممنوع طرد او حظر اي مستخدم 
-2- ممنوع تعديل صلاحيات اي بوت او مستخدم
-3- ممنوع نقل ملكية القناة لأي حساب
-مخالفة القوانين يعرضك للحظر من الخدمه وحظر قناتك
-البوت مجهز ب نظام حماية حديث
-تجربة ممتعة - مطور البوت @k_4x1❤
-'''
-            msg = await e.edit(caption)
-            await msg.pin()
-            await asyncio.sleep(15)
-        command = e.respond if msg else e.edit
-        await command('ارسل الان الايدي او اليوزر\n ارفع المستخدم مشرف مع كامل الصلاحيات ( @fristagent )', buttons=back)
-        session[id] = {"step": data, 'chat': None}
-    elif data == 'react':
-        session[id] = {"step": data, 'chat': None}
-        return await e.edit('ارسل الان رابط رسالة \n **ملاحظة**حته تسوي رياكت تلقائي ضيف قناة عبر زر اضف قناة', buttons=back)
-@ABH.on(events.CallbackQuery(pattern=b'^(delete|channle|react_count|setreact|view_count)'))
-async def _(e):
-    data = e.data.decode('utf-8')
-    arg, chat = data.split(':')
-    if not chat.startswith('-100'):
-        chat = '-100'+chat
-    id = str(e.sender_id)
-    if not id in info:return await e.edit('عذرا بس انت ماعندك قنوات حاليا', buttons=back)
-    if not chat in info[id]:return await e.edit('عذرا بس القناة هاي مو مضافة', buttons=back)
-    if arg == 'delete':
-        del info[id][chat]
-        del chat_info[chat]
-        save_data(all=True)
-        return await e.edit('تم حذف القناة ب نجاح', buttons=back)
-    elif arg == 'channle':
-        button = [
-            [Button.inline('تحديد التفاعلات', data=f'setreact:{chat}', style=green, icon=5226513232549664618)],
-            [Button.inline('عدد المشاهدات', data=f'view_count:{chat}', style=green, icon=5226513232549664618),
-            Button.inline('عدد التفاعلات', data=f'react_count:{chat}', style=green, icon=5226513232549664618)]
-        ]
-        button.append([Button.inline('حذف القناة', data=f'delete:{chat}', style=red, icon=5258130763148172425)])
-        button.append(back)
-        await e.edit('اختر ما تريد تحديده', buttons=button)
-    elif arg in ('view_count', 'react_count'):
-        session[e.sender_id] = {"step": arg, 'chat': chat}
-        caption = 'ارسل الان العدد'
-        caption+=f'\nالعدد الحالي ( {info[id][chat].get(arg)} )' if info[id][chat].get(arg) else '...'
-        return await e.edit(caption, buttons=back)
-    elif arg == 'setreact':
-        session[e.sender_id] = {"step": arg, 'chat': chat}
-        caption = 'ارسل الان الايموجيات المراد وضعها\n'
-        if 'react' in info[id][chat]:
-            caption+=f'الرياكت الحالي ( {', '.join(info[id][chat]['react'])} )'
-        return await e.edit(caption, buttons=back)
-def extract_channel_and_msg(text):
-    pattern = r'https://t\.me/(?!c/)([a-zA-Z0-9_]+)(?:/(\d+))?'
-    match = re.search(pattern, text)
-    if match:
-        channel_username = match.group(1)
-        message_id = match.group(2) if match.group(2) else None
-        return channel_username, message_id
-    return None
-emoji = [
-    "🤣", "❤️", "👍", "👎", "🔥", "🥰", "👏", "😁", "🤯", "😱", "🤬", "😡", "😢", "🎉", "🤩", "🤮", "💩", "🙏", "👌", "🕊",
-    "🤡", "🥱", "😍", "🐳", "❤️‍🔥", "🌚", "🌭", "💯", "⚡️", "🍌", "🏆", "😡", "😘", "🙊", "😎", "👾", "🤷‍♂️",
-    "🤷‍♀️", "🤷", "☃️", "🗿", "🆒", "💘", "🙈", "😇", "😨", "🤝", "✍️", "🤗", "🫡", "🎅", "🎄", "😴", "😭", "🤓", "👻",
-    "👨‍💻", "👀", "🎃", "🙈", "💔", "🤨", "😐", "🍓", "🍾", "💋", "🖕", "😈"]
-async def react(event, chat=None, id=None, emojis=None):
-    chat_id = chat if chat else str(event.chat_id)
-    msg_id = id if id else event.message.id
-    status = [0, 0, set()]
-    views = 0
-    reacts = 0
-    id = str(chat_info[chat_id])
-    rdb = info[id][chat_id].get('react_count', Max)
-    vdb = info[id][chat_id].get('view_count', Max)
-    for _ABH in ABHS:
-        peer = None
-        try:
-            peer = await _ABH.get_input_entity(int(chat_id))
-        except Exception:
-            try:
-                peer = await _ABH.get_entity(int(chat_id))
-            except Exception as er:
-                continue
-        if not views >= vdb:
-            await _ABH(GetMessagesViewsRequest(
-                peer=peer,
-                id=[int(msg_id)],
-                increment=True 
-            ))
-            views += 1
-        if not peer:continue
-        if not reacts >= rdb:
-            emoji = random.choice(list(emojis)) if emojis else random.choice(['❤️', '🕊', '🌚'])
-            try:
-                await _ABH(SendReactionRequest(
-                    peer=peer,
-                    msg_id=int(msg_id),
-                    reaction=[ReactionEmoji(emoticon=emoji)],
-                    big=False
-                ))
-                reacts += 1
-                status[0] += 1
-                await asyncio.sleep(0.3)
-            except Exception as e:
-                status[1] += 1
-                if 'Invalid reaction provided' in str(e):
-                    status[2].add(emoji)
-    return status
-async def random_react(event, chat=None, id=None, emojis=None):
-    chat_id = chat if chat else event.chat_id
-    msg_id = id if id else event.message.id
-    status = [0, 0, set()]
-    for ABH in ABHS:
-        try:
-            peer = await ABH.get_input_entity(int(chat_id))
-        except Exception:
-            peer = await ABH.get_entity(int(chat_id))
-        await ABH(GetMessagesViewsRequest(
-            peer=peer,
-            id=[int(msg_id)],
-            increment=True 
-        ))
-        if not peer:return status
-        emoji = random.choice(emojis) if emojis else random.choice(['❤️', '🕊', '🌚'])
-        try:
-            await ABH(SendReactionRequest(
-                peer=peer,
-                msg_id=int(msg_id),
-                reaction=[ReactionEmoji(emoticon=emoji)],
-                big=False
-            ))
-            status[0] += 1
-            await asyncio.sleep(0.3)
-        except Exception as e:
-            status[1] += 1
-            if 'Invalid reaction provided' in str(e):
-                status[2].add(emoji)
-    return status
-async def _filter(e):
-    if not e.is_private:return
-    text = e.text
-    id = e.sender_id
-    sid = str(e.sender_id)
-    if text == '/start':return
-    if id not in session:return
-    step = session[id].get('step')
-    chat_id = session.get(id).get('chat')
-    if step == 'add_channle':
-        target = None
-        if text.startswith(('https://t.me/', '@')):
-            target = text
-        elif text.isdigit():
-            target = int(text)
+    if r.get(f"{me.id}:{uid}"): return True
+    results = await asyncio.gather(
+        *(is_in_channel(uid, ch) for ch in channels))
+    buttons = [
+        [Button.url(f"اشترك في {ch}", url=f"https://t.me/{ch}")]
+        for ch, joined in zip(channels, results)
+        if not joined]
+    if callable:return buttons
+    if buttons:
+        if etype == 'callback':
+            await e.edit(
+                "🔐 للوصول إلى خدمات البوت يجب الاشتراك في القنوات التالية:",
+                buttons=buttons
+            )
         else:
-            return await e.reply('ادخل يوزر او ايدي او رابط صالح!', buttons=back)
-        if not target:return await e.reply(f'عذرا بس ماكدرت اوصل معلومات ( {target} )')
-        chat = await ABH.get_entity(target)        
-        if not isinstance(chat, Channel) or not chat.broadcast:
-            return await e.reply('صديقي اتفقنه تضيف قناة مو شيء اخر!', buttons=back)
-        chan_key = str(chat.id)
-        if not chan_key.startswith('-100'):
-            chan_key = '-100'+chan_key
-        if not isinstance(info.get(sid), dict):
-            info[sid] = {}
-        if step == 'del_channle':
-            if session.get(id):
-                del session[id]
-            return await e.reply('تم تجاهل الاضافة', buttons=back)
-        if chan_key in info[sid]:
-            return await e.reply('عذرا بس القناة هاي ضايفها انت من قبل', buttons=back)
-        if chan_key in chat_info and int(chat_info[chan_key]) != e.sender_id:return await e.reply(f'عذرا بس هاي القناة مضافة من ( {await ment(int(chat_info[chan_key]))} )')
+            await e.reply(
+                "🔐 للوصول إلى خدمات البوت يجب الاشتراك في القنوات التالية:",
+                buttons=buttons
+            )
+        raise events.StopPropagation
+    r.set(f"{me.id}:{uid}", 1, ex=120)
+    if r.sismember(key, e.sender_id): return True
+    r.sadd(key, e.sender_id)
+    photo = await get_profile_photo(e.sender_id)
+    caption = f'تم تسجيل مستخدم جديد \n اسمه ( {await ment(e)} )\n ايديه  ( `{e.sender_id}` )'    
+    if photo:
+        await ABH.send_file(wfffp, file=photo, caption=caption, reply_to=e.id)
+    else:
+        await ABH.send_message(e.chat_id, message=caption, reply_to=e.id)
+async def get_profile_photo(id, user=None):
+    photos = []
+    try:
+        user = user if user else await ABH.get_entity(id)
+        photos = await ABH.get_profile_photos(user, limit=1)
+        if photos:
+            return photos[0]
+        else:
+            return None
+    except:
+            return None
+async def get_input_media(media_data):
+    if not media_data or not isinstance(media_data, dict):return None
+    m_id = int(media_data['id'])
+    m_hash = int(media_data['hash'])
+    m_ref = bytes.fromhex(media_data['ref'])
+    if media_data['type'] == "doc":
+        return types.InputDocument(id=m_id, access_hash=m_hash, file_reference=m_ref)
+    return types.InputPhoto(id=m_id, access_hash=m_hash, file_reference=m_ref)
+async def extract_media_data(e):
+    if not e.media: return None
+    if isinstance(e.media, types.MessageMediaDocument):
+        doc = e.media.document
+        return {"type": "doc", "id": doc.id, "hash": doc.access_hash, "ref": doc.file_reference.hex()}
+    elif isinstance(e.media, types.MessageMediaPhoto):
+        photo = e.media.photo
+        return {"type": "photo", "id": photo.id, "hash": photo.access_hash, "ref": photo.file_reference.hex()}
+    return None
+async def ment(entity):
+  if isinstance(entity, (int, str)) and str(entity).lstrip('-').isdigit():
+    user = await ABH.get_entity(int(entity))
+  elif hasattr(entity, "sender"):
+    user = await entity.get_sender()
+  else:
+    user = entity
+  user_id = getattr(user, "id", getattr(entity, "sender_id", None))
+  p = profile(user_id) if user_id else None
+  first_name = getattr(user, "first_name", "مستخدم") if user else "مستخدم"
+  name = p.get("name") if p and p.get("name") else first_name
+  return f"[{name}](tg://user?id={user_id})"
+async def custom_emoji(e, text, emoji, buttons=None):
+    selected = random.choice(emoji) if isinstance(emoji, (list, tuple)) else emoji
+    await e.reply(
+        f'{text} <tg-emoji emoji-id="{selected}">⬆️</tg-emoji>', 
+        buttons=buttons, parse_mode='html')
+def profile(user_id):
+    data = r.get(f"user:{user_id}")
+    return json.loads(data) if data else None
+async def hint(text):
+    await ABH.send_message(wfffp, str(text))
+red = "danger"
+green = "success"
+blue = "primary"
+def create(filename):
+    if not os.path.exists(filename):
+        with open(filename, 'w', encoding='utf-8') as f:
+            json.dump({}, f, ensure_ascii=False, indent=4)
+    with open(filename, 'r', encoding='utf-8') as f:
         try:
-            bot_user = await ABH.get_me()
-            participant = await ABH(GetParticipantRequest(
-                channel=chat,
-                participant=bot_user.id
+            return json.load(f)
+        except json.JSONDecodeError:
+            return {}
+def get_years_months_days(past_date_str, date_format="%Y-%m-%d"):
+    past_date = datetime.strptime(past_date_str, date_format).date()
+    current_date = datetime.now().date()
+    difference = relativedelta(current_date, past_date)
+    years = difference.years
+    months = difference.months
+    days = difference.days        
+    return years, months, days
+async def get_profile_photo(id, user=None):
+    photos = []
+    try:
+        user = user if user else await ABH.get_entity(id)
+        photos = await ABH.get_profile_photos(user, limit=1)
+        if photos:
+            return photos[0]
+        else:
+            return None
+    except:
+            return None
+async def get_input_media(media_data):
+    if not media_data or not isinstance(media_data, dict):return None
+    m_id = int(media_data['id'])
+    m_hash = int(media_data['hash'])
+    m_ref = bytes.fromhex(media_data['ref'])
+    if media_data['type'] == "doc":
+        return types.InputDocument(id=m_id, access_hash=m_hash, file_reference=m_ref)
+    return types.InputPhoto(id=m_id, access_hash=m_hash, file_reference=m_ref)
+async def get_channel_owner(chat):
+    async for user in ABH.iter_participants(chat, filter=ChannelParticipantsAdmins()):
+        if isinstance(user.participant, ChannelParticipantCreator):
+            return user
+    return None
+async def send(e, text, buttons=None, id=None, edit=None):
+    user_id = id or e.sender_id
+    msg_id = getattr(e, 'message_id', None) or (e.message.id if hasattr(e, 'message') else e.id)
+    msg = None
+    try:
+        user_entity = await ABH.get_entity(user_id)
+        photos = await ABH.get_profile_photos(user_entity, limit=1)
+        if photos:
+            if edit:
+                return await e.edit(text, file=photos[0], buttons=buttons)
+            msg = await ABH.send_file(
+                e.chat_id, 
+                file=photos[0], 
+                caption=text, 
+                buttons=buttons, 
+                reply_to=msg_id
+            )
+            return msg
+    except Exception as err:
+        await hint(f"فشلت محاولة إرسال افتار الـ ID: {err}")
+    try:
+        p = profile(user_id)
+        if p and p.get('media'):
+            input_media = await get_input_media(p.get('media'))
+            if input_media:
+                if edit:
+                    return await e.edit(text, file=input_media, buttons=buttons)
+                
+                msg = await ABH.send_file(
+                    e.chat_id, 
+                    file=input_media, 
+                    caption=text, 
+                    buttons=buttons, 
+                    reply_to=msg_id
+                )
+                return msg
+    except Exception as err:
+        await hint(f"فشلت محاولة إرسال ميديا الـ profile: {err}")
+    if edit:
+        return await e.edit(text, buttons=buttons)
+    msg = await e.reply(text, buttons=buttons)
+    return msg
+def chunk_list(lst, n=2):
+    return [lst[i:i + n] for i in range(0, len(lst), n)]
+def lprint(*args, **kwargs):
+    formatted_args = [str(arg) for arg in args]
+    formatted_kwargs = [f"{key}={value}" for key, value in kwargs.items()]
+    all_items = formatted_args + formatted_kwargs
+    print(" , ".join(all_items))
+def print_all():
+  caller_frame = inspect.currentframe().f_back
+  func_name = caller_frame.f_code.co_name
+  caller_locals = caller_frame.f_locals
+  items = list(caller_locals.items())[1:]
+  formatted_items = []
+  for k, v in items:
+    if not isinstance(v, (str, int, float, bool, list, dict, set, tuple)):
+      continue
+    formatted_items.append(f"{k}={v}")
+  result = " , ".join(formatted_items)
+  print(f"متغيرات دالة ( {func_name} ): \n{result}")
+def ordinal_arabic_female(n):
+    if not (1 <= n <= 100):
+        return None
+    ones = [
+        "", "الأولى", "الثانية", "الثالثة", "الرابعة", "الخامسة",
+        "السامة", "السابعة", "الثامنة", "التاسعة", "العاشرة"
+    ]    
+    tens = {
+        20: "العشرون", 30: "الثلاثون", 40: "الأربعون", 
+        50: "الخمسون", 60: "الستون", 70: "السبعون", 
+        80: "الثمانون", 90: "التسعون"
+    }
+    if n == 100:
+        return "المائة"
+    if n <= 10:
+        return ones[n]
+    if n in tens:
+        return tens[n]
+    if 11 <= n <= 19:
+        units_teen = [
+            "", "الحادية", "الثانية", "الثالثة", "الرابعة", 
+            "الخامسة", "السادسة", "السابعة", "الثامنة", "التاسعة"
+        ]
+        return f"{units_teen[n % 10]} عشرة"
+    units_compound = [
+        "", "الحادية", "الثانية", "الثالثة", "الرابعة", 
+        "الخامسة", "السادسة", "السابعة", "الثامنة", "التاسعة"
+    ]    
+    ten_part = (n // 10) * 10
+    one_part = n % 10
+    return f"{units_compound[one_part]} و{tens[ten_part]}"
+async def try_forward(event, chat=None, id=None, to=None, drop_author=None):
+    msg_id = id if id else getattr(event, 'id', None)
+    raw_from = chat if chat else getattr(event, 'chat_id', None)
+    raw_to = to if to else getattr(event, 'chat_id', None)
+    try:
+        if msg_id is not None:
+            msg_id = int(msg_id)
+        else:
+            return False
+        if isinstance(raw_from, str) and raw_from.isdigit():
+            from_peer = int(raw_from)
+        elif isinstance(raw_from, int):
+            from_peer = raw_from
+        else:
+            from_peer = await ABH.get_input_entity(raw_from)
+        if isinstance(raw_to, str) and raw_to.isdigit():
+            target_chat = int(raw_to)
+        elif isinstance(raw_to, int):
+            target_chat = raw_to
+        else:
+            target_chat = await ABH.get_input_entity(raw_to)
+        await ABH.forward_messages(
+            entity=target_chat,
+            messages=msg_id,
+            from_peer=from_peer,
+            drop_author=drop_author
+        )
+        return True
+    except Exception as e:
+        return False
+async def is_user_in_channel(chat, user):
+    try:
+        input_channel = await ABH.get_input_entity(chat)
+        input_user = await ABH.get_input_entity(user)
+        
+        participant = await ABH(GetParticipantRequest(
+            channel=input_channel,
+            participant=input_user
+        ))
+        return True
+        
+    except UserNotParticipantError:
+        return False
+    except Exception as e:
+        print(f"⚠️ خطأ غير متوقع في is_user_in_channel: {type(e).__name__} - {e}")
+        return False
+async def add_users_to_channel(channel):
+    success_count = 0
+    failed_count = 0
+    for user_id in users_id:
+        try:
+            await ABHS[0](InviteToChannelRequest(
+                channel=channel,
+                users=[user_id]
             ))
-            is_admin = isinstance(participant.participant, ChannelParticipantAdmin)
-            if not is_admin:
-                return await e.reply("البوت مو مشرف! ارفعه مشرف بالاول وعيد المحاولة", buttons=back)
-        except UserNotParticipantError:
-            return await e.reply("❌ البوت غير موجود في القناة! يرجى إضافته ورفعه مشرفاً أولاً.", buttons=back)
-        owner = await get_channel_owner(chat)
-        participants = await ABH.get_participants(chat, limit=0)
-        if participants.total < 5:
-            return await e.reply("عذرا بس قناتك ما بيها مستخدمين هواي", buttons=back)
-        current_time = datetime.now(ZoneInfo("Asia/Baghdad")).strftime("%Y-%m-%d %H:%M:%S")
-        info[sid][chan_key] = {
-            'name': chat.title,
-            'owner': owner.id,
-            'added_by': e.sender_id,
-            'count': participants.total,
-            'text': text,
-            'time': current_time,
-            'react_count': Max,
-            'view_count': Max,
-            }
-        users, users_id = await sync_users()
-        is_on = await is_user_in_channel(chat.id, users_id[0])
-        print(users_id[0])
-        if not is_on:
-            return await e.reply('عذرا صديقي اما تضيف الحسابات انت يدويا او ترفع ( @fristagent ) حته يضيفهم تلقائيا\nيحتاج صلاحية اضافه اعضاء فقط!', buttons=back)
-        status = await add_users_to_channel(chat.id)
-        if not status:e.reply('فشل اضافة الاعضاء ممكن قناتك خاصة', buttons=back)
-        chat_info[chan_key] = id
-        save_data(all=True)
-        caption = f'**تم اضافة القناة بنجاح🌚**\nاسم القناة: ( {chat.title} )\nايدي القناة: ( `{chat.id}` )\n مالك القناة: ( {await ment(owner)} )\n ايديه: ( `{owner.id}` )\n عدد مشتركين القناة: ( `{participants.total}` )\n تم اضافة ( {status[0]} )'
-        if status[1]>0:
-            caption+=f'\nفشل اضافة ( {status[1]} )'
-        url=f'https://t.me/{chat.username}' if chat.username else f'https://t.me/c/{str(chat.id).replace("-100", "")}/1'
-        caption+=f'\nالرابط ( [{chat.title}]({url}) )'
-        b = [Button.url(chat.title, url=url, style=blue, icon=5465374681915727405)]
-        button = [b, back]
-        photo_file = None
-        if chat.photo:
-            photo_bytes = await ABH.download_profile_photo(chat, file=bytes)
-            if photo_bytes:
-                photo_file = BytesIO(photo_bytes)
-                photo_file.name = "photo.jpg"
-        del session[id]
-        if photo_file:
-            return await e.reply(caption, file=photo_file, buttons=button)
-        return await e.reply(caption, buttons=button)
-    elif step == 'setreact':
-        if not text:return await e.reply('يرجى ارسال نص صالح', buttons=back)
-        valid_emojis = set()
-        uninvailde = set()
-        for t in text.split():
-            for char in t:
-                if char in emoji:
-                    valid_emojis.add(char)
-                else:
-                    uninvailde.add(t)
-        caption = f'**النص المدخل** ( `{text}` )\n'
-        if valid_emojis:
-            caption+= f'تم اضافة ( {', '.join(valid_emojis)} )\n'
-        if uninvailde:
-            caption+=f'تم تخطي ( {', '.join(uninvailde)} )\n'
-        if not valid_emojis:return await e.reply('لم يتم ارسال ايموجي صالح', buttons=back)
-        info[sid][chat_id]['react'] = list(valid_emojis)
-        save_data()
-        del session[id]
-        return await e.reply(caption, buttons=back)
-    elif step in ('react_count', 'view_count'):
-        if not text.isdigit():
-            return await e.reply('ارسل رقم صالح!', buttons=back)
-        num = int(text)
-        if num < 1 or num > Max:return await e.reply(f'عذرا صديقي بس العدد لازم يكون بين (1-{Max} )', buttons=back)
-        info[sid][chat_id][step] = num
-        save_data()
-        if id in session:
-            del session[id]
-        label = "التفاعلات" if step == 'react_count' else "المشاهدات"
-        return await e.reply(f'تم تحديد عدد {label} المطلوبة ( `{text}` )', buttons=back)
-    elif step == 'react':
-        if not text.startswith('https://t.me/'):return await e.reply('ارسل رابط صالح!', buttons=back)
-        chat, mid = extract_channel_and_msg(text)
-        if not chat or not mid:return await e.reply('الرابط غير كامل!', buttons=back)
-        if 'temp' not in session[id]:
-            session[id]['temp'] = {}
-        session[id]['step'] = 'setemoji'
-        session[id]['temp']['chat'] = chat
-        session[id]['temp']['id'] = mid
-        chat_entity = await ABH.get_entity(chat)
-        if not chat:return await e.reply('عذرا بس القناة غير موجودة')
-        await try_forward(e, chat=int(chat) if chat.isdigit() else chat, id=mid, to=e.sender_id)
-        return await e.reply('ارسل الان التفاعلات المطلوبة')
-    elif step == 'setemoji':
-        valid_emojis = set()
-        uninvailde = set()
-        for t in text.split():
-            for char in t:
-                if char in emoji:
-                    valid_emojis.add(char)
-                else: 
-                    uninvailde.add(t)
-        caption = 'يجري عمل الرياكت...'
-        print_all()
-        if uninvailde:caption+=f'\n تم تخطي ايموجيات غير صالحه ( {"و ".join(uninvailde)} )'
-        status_msg = await e.reply(caption)
-        chat = session[id]['temp']['chat']
-        mid = session[id]['temp']['id']
-        chat_entity = await ABH.get_entity(chat)
-        if not chat_entity:return await e.reply('ما لكيت القناة الي طلبتها!')
-        status = await random_react(e, chat=chat_entity.id, id=mid, emojis=list(valid_emojis))
-        if 'temp' in session.get(id, {}):
-            del session[id]['temp']
-        del session[id]
-        caption = f"""
-✅ **اكتملت العملية بنجاح**\n
-📍 اليوزر: ( `{chat}` )
-👥 الحسابات المشاركة: ( `{len(ABHS)}` )
-🔥 التفاعلات الناجحة: ( `{status[0]}` )
-"""
-        if status[1]>0:
-            caption+= f'\n❌ التفاعلات الفاشلة: ( `{status[1]}` )'
-        if status[2]:
-            caption+= f'\n❌ ايموجيات مقفولة في القناة: ( {'و '.join(status[2])} )'
-        return await status_msg.edit(caption)
-ABH.run_until_disconnected()
+            success_count += 1
+        except UserPrivacyRestrictedError:
+            failed_count += 1
+            print(f'فشل إضافة {user_id}: المستخدم يمنع إضافته للمجموعات/القنوات حسب إعدادات خصوصيته 🔒')
+        except FloodWaitError as e:
+            break 
+        except Exception as e:
+            failed_count += 1
+            print(f'فشل إضافة {user_id} بسبب خطأ: {e} ❌')
+    return success_count, failed_count
