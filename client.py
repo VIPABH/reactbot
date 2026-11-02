@@ -36,12 +36,12 @@ for i, session in enumerate(sessions, start=1):
         print(f"Skipping {session} due to missing environment variables.")
 ABHS = [clients.get(session) for session in sessions]
 users = {}
-re_users = {}
+users_id = set()
 async def sync_users():
     global users
-    if users and re_users:return users, re_users
+    if users and users_id:return users, list(users_id)
     for ABH in ABHS:
         me = await ABH.get_me()
         users[me.id] = ABH
-        re_users[ABH] = me.id
-    return users, re_users
+        users_id.add(me.id)
+    return users, list(users_id)
