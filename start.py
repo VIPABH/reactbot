@@ -522,7 +522,7 @@ async def react_via_link(event):
     else:
         peer = channel_identifier
         
-    emojis_list = ['❤️', '🕊', '🌚', '🔥', '👍']
+    emojis_list = '👍']
     success_count = 0
 
     for client in ABHS:
