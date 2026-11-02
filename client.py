@@ -29,19 +29,8 @@ for i, session in enumerate(sessions, start=1):
     api_id_i = os.getenv(f"API_ID{i}")
     api_hash_i = os.getenv(f"API_HASH{i}")
     if api_id_i and api_hash_i:
-        print(f"Starting {session}...")
         clients[session] = TelegramClient(session, int(api_id_i), api_hash_i).start()
         print(f"{session} is working!")
     else:
         print(f"Skipping {session} due to missing environment variables.")
 ABHS = [clients.get(session) for session in sessions]
-users = {}
-users_id = set()
-async def sync_users():
-    global users
-    if users and users_id:return users, list(users_id)
-    for ABH in ABHS:
-        me = await ABH.get_me()
-        users[me.id] = ABH
-        users_id.add(me.id)
-    return users, list(users_id)
