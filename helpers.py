@@ -1,4 +1,6 @@
+from telethon.errors import UserPrivacyRestrictedError, FloodWaitError, PeerFloodError
 from telethon.tl.types import ChannelParticipantsAdmins, ChannelParticipantCreator
+from telethon.tl.functions.channels import InviteToChannelRequest
 from telethon.tl.functions.channels import GetParticipantRequest
 from telethon.tl.types import ChannelParticipantsMentions
 from telethon import TelegramClient, events, Button
@@ -297,3 +299,22 @@ async def is_user_in_channel(chat, user):
         return False  
     except Exception:
         return False
+async def add_users_to_channel(channel):
+    success_count = 0
+    failed_count = 0
+    for user_id in users_id:
+        try:
+            await ABHS[0](InviteToChannelRequest(
+                channel=channel,
+                users=[user_id]
+            ))
+            success_count += 1
+        except UserPrivacyRestrictedError:
+            failed_count += 1
+            print(f'فشل إضافة {user_id}: المستخدم يمنع إضافته للمجموعات/القنوات حسب إعدادات خصوصيته 🔒')
+        except FloodWaitError as e:
+            break 
+        except Exception as e:
+            failed_count += 1
+            print(f'فشل إضافة {user_id} بسبب خطأ: {e} ❌')
+    return success_count, failed_count
