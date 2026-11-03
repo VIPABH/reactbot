@@ -1,9 +1,9 @@
 from telethon.tl.functions.messages import GetMessagesViewsRequest, SendReactionRequest
 from telethon.tl.functions.channels import GetParticipantRequest
+from telethon.tl.types import ReactionEmoji, PeerChannel
 from telethon.tl.types import MessageEntityCustomEmoji
 from telethon.tl.types import ChannelParticipantAdmin
 from telethon.errors import UserNotParticipantError
-from telethon.tl.types import ReactionEmoji
 from telethon.tl.types import Channel
 import asyncio, random, re, os, time
 from datetime import datetime
@@ -245,7 +245,6 @@ emoji = [
     "🤡", "🥱", "😍", "🐳", "❤️‍🔥", "🌚", "🌭", "💯", "⚡️", "🍌", "🏆", "😡", "😘", "🙊", "😎", "👾", "🤷‍♂️",
     "🤷‍♀️", "🤷", "☃️", "🗿", "🆒", "💘", "🙈", "😇", "😨", "🤝", "✍️", "🤗", "🫡", "🎅", "🎄", "😴", "😭", "🤓", "👻",
     "👨‍💻", "👀", "🎃", "🙈", "💔", "🤨", "😐", "🍓", "🍾", "💋", "🖕", "😈"]
-hint_msg = {}
 async def react(event, chat=None, id=None, emojis=None):
     chat_id = chat if chat else str(event.chat_id)
     msg_id = id if id else event.message.id
@@ -256,30 +255,7 @@ async def react(event, chat=None, id=None, emojis=None):
     rdb = info[id][chat_id].get('react_count', Max)
     vdb = info[id][chat_id].get('view_count', Max)
     for _ABH in ABHS:
-        peer = None
-        try:
-            peer = await _ABH.get_entity(int(chat_id))
-        except Exception as er:
-            if 'Could not find' in str(er) or 'No user has' in str(er):
-                current_time = time.time()
-                if id not in hint_msg:
-                    hint_msg[id] = current_time
-                    try:
-                        _chat = await ABH.get_entity(int(chat_id))
-                        title = _chat.title
-                    except Exception:
-                        title = chat_id
-                    await ABH.send_message(int(id), f'عذرا صديقي القناة محظوره ماكدر اتفاعل بيها ( {title} )\nاحذفها وجرب تضيف قناة اخرى')
-                else:
-                    if (current_time - hint_msg[id]) > 300:
-                        hint_msg[id] = current_time
-                        try:
-                            _chat = await ABH.get_entity(int(chat_id))
-                            title = _chat.title
-                        except Exception:
-                            title = chat_id
-                        await ABH.send_message(int(id), f'عذرا صديقي القناة محظوره ماكدر اتفاعل بيها  ( {title} )\nاحذفها وجرب تضيف قناة اخرى')
-            continue
+        peer = PeerChannel(int(chat))
         if not views >= vdb:
             try:
                 await _ABH(GetMessagesViewsRequest(
@@ -313,13 +289,7 @@ async def random_react(event, chat=None, id=None, emojis=None):
     msg_id = id if id else event.message.id
     status = [0, 0, set()]
     for ABH in ABHS:
-        try:
-            peer = await ABH.get_entity(int(chat_id))
-        except Exception:
-            try:
-                peer = await ABH.get_input_entity(int(chat_id))
-            except Exception:
-                continue
+        peer = PeerChannel(int(chat))    
         try:
             await ABH(GetMessagesViewsRequest(
                 peer=peer,
