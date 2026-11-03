@@ -437,7 +437,9 @@ async def _filter(e):
         session[id]['temp']['chat'] = chat
         session[id]['temp']['id'] = mid
         chat_entity = await ABH.get_entity(chat)
-        if not chat:return await e.reply('عذرا بس القناة غير موجودة')
+        if not isinstance(chat_entity, Channel):
+            return await e.reply("عذرا صديقي المحادثه الي ارسلتها مو قناة")
+        if not chat_entity:return await e.reply('عذرا بس القناة غير موجودة')
         await try_forward(e, chat=int(chat) if chat.isdigit() else chat, id=mid, to=e.sender_id)
         return await e.reply('ارسل الان التفاعلات المطلوبة')
     elif step == 'setemoji':
