@@ -1,20 +1,12 @@
-from telethon.errors import UserPrivacyRestrictedError, FloodWaitError, PeerFloodError
 from telethon.tl.types import ChannelParticipantsAdmins, ChannelParticipantCreator
-from telethon.tl.functions.channels import InviteToChannelRequest
+from telethon.tl.types import MessageMediaPhoto, MessageMediaDocument
 from telethon.tl.functions.channels import GetParticipantRequest
-from telethon.tl.types import ChannelParticipantsMentions
-from telethon import TelegramClient, events, Button
+from telethon import TelegramClient, events, Button, types
 from telethon.errors import UserNotParticipantError
-from telethon.tl.types import (
-    MessageExtendedMediaPreview, DocumentAttributeAudio, DocumentAttributeSticker,
-    Message, MessageMediaPhoto, MessageMediaDocument, MessageMediaGeo,
-    DocumentAttributeVideo, DocumentAttributeAnimated,
-    MessageMediaPoll, MessageExtendedMedia,)
 from dateutil.relativedelta import relativedelta
 from datetime import datetime
-import asyncio, json, inspect
-from telethon import types
 from client import *
+import asyncio, json
 wfffp = 1910015590
 channels = [
     'ANYMOUSupdate', 
@@ -288,38 +280,3 @@ async def try_forward(event, chat=None, id=None, to=None, drop_author=None):
         return True
     except Exception as e:
         return False
-async def is_user_in_channel(chat, user):
-    try:
-        input_channel = await ABH.get_input_entity(chat)
-        input_user = await ABH.get_input_entity(user)
-        
-        participant = await ABH(GetParticipantRequest(
-            channel=input_channel,
-            participant=input_user
-        ))
-        return True
-        
-    except UserNotParticipantError:
-        return False
-    except Exception as e:
-        print(f"⚠️ خطأ غير متوقع في is_user_in_channel: {type(e).__name__} - {e}")
-        return False
-async def add_users_to_channel(channel):
-    success_count = 0
-    failed_count = 0
-    for user_id in users_id:
-        try:
-            await ABHS[0](InviteToChannelRequest(
-                channel=channel,
-                users=[user_id]
-            ))
-            success_count += 1
-        except UserPrivacyRestrictedError:
-            failed_count += 1
-            print(f'فشل إضافة {user_id}: المستخدم يمنع إضافته للمجموعات/القنوات حسب إعدادات خصوصيته 🔒')
-        except FloodWaitError as e:
-            break 
-        except Exception as e:
-            failed_count += 1
-            print(f'فشل إضافة {user_id} بسبب خطأ: {e} ❌')
-    return success_count, failed_count
