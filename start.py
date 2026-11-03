@@ -451,6 +451,7 @@ async def _filter(e):
                     valid_emojis.add(char)
                 else: 
                     uninvailde.add(t)
+        if not valid_emojis:return await e.reply("ما لكيت ايموجيات صالحه حته اسويلك بيها تفاعل")
         caption = 'يجري عمل الرياكت...'
         if uninvailde:caption+=f'\n تم تخطي ايموجيات غير صالحه ( {"و ".join(uninvailde)} )'
         status_msg = await e.reply(caption)
