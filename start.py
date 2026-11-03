@@ -357,7 +357,7 @@ async def _filter(e):
         target = None
         if text.startswith(('https://t.me/', '@')):
             target = text
-        elif text.isdigit():
+        elif text.lstrip('-').isdigit():
             target = int(text)
         else:
             return await e.reply('ادخل يوزر او ايدي او رابط صالح!', buttons=back)
