@@ -437,7 +437,7 @@ async def _filter(e):
         session[id]['temp']['chat'] = chat
         session[id]['temp']['id'] = mid
         chat_entity = await ABH.get_entity(chat)
-        if not isinstance(chat_entity, Channel):
+        if not isinstance(chat_entity, Channel) or not chat_entity.broadcast:
             return await e.reply("عذرا صديقي المحادثه الي ارسلتها مو قناة")
         if not chat_entity:return await e.reply('عذرا بس القناة غير موجودة')
         await try_forward(e, chat=int(chat) if chat.isdigit() else chat, id=mid, to=e.sender_id)
