@@ -197,7 +197,7 @@ async def start_callback(e):
         await e.edit('ارسل الان الايدي او اليوزر', buttons=back)
     elif data == 'react':
         session[id] = {"step": data, 'chat': None}
-        return await e.edit('ارسل الان رابط رسالة \n **ملاحظة**حته تسوي رياكت تلقائي ضيف قناة عبر زر اضف قناة', buttons=back)
+        return await e.edit('ارسل الان رابط رسالة \n **ملاحظة** حته تسوي رياكت تلقائي ضيف قناة عبر زر اضف قناة', buttons=back)
 @ABH.on(events.CallbackQuery(pattern=b'^(delete|channle|react_count|setreact|view_count)'))
 async def _(e):
     data = e.data.decode('utf-8')
