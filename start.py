@@ -250,12 +250,15 @@ async def react(event, chat=None, id=None, emojis=None):
     msg_id = id if id else event.message.id
     status = [0, 0, set()]
     views = 0
-    reacts = 0
-    id = str(chat_info[chat_id])
-    rdb = info[id][chat_id].get('react_count', Max)
-    vdb = info[id][chat_id].get('view_count', Max)
+    reacts = 0    
+    info_id = str(chat_info[chat_id])
+    rdb = info[info_id][chat_id].get('react_count', Max)
+    vdb = info[info_id][chat_id].get('view_count', Max)
     for _ABH in ABHS:
-        peer = PeerChannel(int(chat))
+        try:
+            peer = PeerChannel(int(chat_id))
+        except Exception:
+            continue
         if not views >= vdb:
             try:
                 await _ABH(GetMessagesViewsRequest(
@@ -266,7 +269,8 @@ async def react(event, chat=None, id=None, emojis=None):
                 views += 1
             except Exception:
                 pass
-        if not peer:continue
+        if not peer: 
+            continue
         if not reacts >= rdb:
             emoji = random.choice(list(emojis)) if emojis else random.choice(['❤️', '🕊', '🌚'])
             try:
@@ -285,11 +289,14 @@ async def react(event, chat=None, id=None, emojis=None):
                     status[2].add(emoji)
     return status
 async def random_react(event, chat=None, id=None, emojis=None):
-    chat_id = chat if chat else event.chat_id
+    chat_id = chat if chat else str(event.chat_id)
     msg_id = id if id else event.message.id
     status = [0, 0, set()]
     for ABH in ABHS:
-        peer = PeerChannel(int(chat))    
+        try:
+            peer = PeerChannel(int(chat_id))
+        except Exception:
+            continue            
         try:
             await ABH(GetMessagesViewsRequest(
                 peer=peer,
@@ -298,7 +305,8 @@ async def random_react(event, chat=None, id=None, emojis=None):
             ))
         except Exception:
             pass
-        if not peer:return status
+        if not peer:
+            return status
         emoji = random.choice(emojis) if emojis else random.choice(['❤️', '🕊', '🌚'])
         try:
             await ABH(SendReactionRequest(
@@ -463,58 +471,4 @@ async def _filter(e):
         if status[2]:
             caption+= f'\n❌ ايموجيات مقفولة في القناة: ( {'و '.join(status[2])} )'
         return await status_msg.edit(caption)
-import re
-import random
-from telethon import events
-from telethon.tl.functions.messages import SendReactionRequest, GetMessagesViewsRequest
-from telethon.tl.types import ReactionEmoji, PeerChannel
-
-
-# الروابط المدعومة: https://t.me/c/123456789/10 أو https://t.me/username/10
-LINK_PATTERN = r"(?:https?://)?t\.me/(?:c/)?([^/]+)/(\d+)"
-
-@ABH.on(events.NewMessage(pattern=r"^/react\s+(.+)"))
-async def react_via_link(event):
-    link = event.pattern_match.group(1).strip()
-    match = re.search(LINK_PATTERN, link)
-    
-    if not match:
-        await event.reply("❌ رابط المنشور غير صحيح.")
-        return
-    
-    channel_identifier, msg_id = match.groups()
-    msg_id = int(msg_id)
-    
-    # تحديد الـ peer حسب نوع القناة (عامة عبر يوزرنيم أو خاصة عبر أيدي)
-    if channel_identifier.isdigit():
-        peer = PeerChannel(int(channel_identifier))
-    else:
-        peer = channel_identifier
-        
-    emojis_list = ['😁']
-    success_count = 0
-
-    for client in ABHS:
-        try:
-            # 1. زيادة المشاهدة
-            await client(GetMessagesViewsRequest(
-                peer=peer,
-                id=[msg_id],
-                increment=True
-            ))
-            
-            # 2. إرسال التفاعل
-            emoji = random.choice(emojis_list)
-            await client(SendReactionRequest(
-                peer=peer,
-                msg_id=msg_id,
-                reaction=[ReactionEmoji(emoticon=emoji)],
-                big=False
-            ))
-            
-            success_count += 1
-        except Exception:
-            continue
-
-    await event.reply(f"✅ تم تنفيذ التفاعل والمشاهدات بنجاح بواسطة {success_count} حساب.")
 ABH.run_until_disconnected()
