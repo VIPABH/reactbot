@@ -4,8 +4,8 @@ from telethon.tl.types import ReactionEmoji, PeerChannel
 from telethon.tl.types import MessageEntityCustomEmoji
 from telethon.tl.types import ChannelParticipantAdmin
 from telethon.errors import UserNotParticipantError
+import asyncio, random, re, os, time, emoji
 from telethon.tl.types import Channel
-import asyncio, random, re, os, time
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from io import BytesIO
@@ -404,14 +404,8 @@ async def _filter(e):
         return await e.reply(caption, buttons=button)
     elif step == 'setreact':
         if not text:return await e.reply('يرجى ارسال نص صالح', buttons=back)
-        valid_emojis = set()
-        uninvailde = set()
-        for t in text.split():
-            for char in t:
-                if char in emoji:
-                    valid_emojis.add(char)
-                else:
-                    uninvailde.add(t)
+        valid_emojis = emoji.distinct_emoji_list(text)
+        uninvailde = emoji.replace_emoji(text, replace='').split()
         caption = f'**النص المدخل** ( `{text}` )\n'
         if valid_emojis:
             caption+= f'تم اضافة ( {', '.join(valid_emojis)} )\n'
@@ -450,21 +444,15 @@ async def _filter(e):
         await try_forward(e, chat=int(chat) if chat.isdigit() else chat, id=mid, to=e.sender_id)
         return await e.reply('ارسل الان التفاعلات المطلوبة')
     elif step == 'setemoji':
-        valid_emojis = set()
-        uninvailde = set()
-        for t in text.split():
-            for char in t:
-                if char in emoji:
-                    valid_emojis.add(char)
-                else: 
-                    uninvailde.add(t)
+        valid_emojis = emoji.distinct_emoji_list(text)
+        uninvailde = emoji.replace_emoji(text, replace='').split()
         if not valid_emojis:return await e.reply("ما لكيت ايموجيات صالحه حته اسويلك بيها تفاعل")
         caption = 'يجري عمل الرياكت...'
         if uninvailde:caption+=f'\n تم تخطي ايموجيات غير صالحه ( {"و ".join(uninvailde)} )'
         status_msg = await e.reply(caption)
         chat = session[id]['temp']['chat']
         mid = session[id]['temp']['id']
-        status = await random_react(e, chat=int(chat) if chat.isdigit() else chat, id=mid, emojis=list(valid_emojis))
+        status = await random_react(e, chat=int(chat) if chat.isdigit() else chat, id=mid, emojis=valid_emojis)
         if 'temp' in session.get(id, {}):
             del session[id]['temp']
         del session[id]
