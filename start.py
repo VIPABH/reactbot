@@ -322,7 +322,7 @@ async def random_react(event, chat=None, id=None, emojis=None):
         except Exception as er2:
             print(f"{er2=}")
             status[1] += 1
-            if 'Invalid reaction provided' in str(e):
+            if 'Invalid reaction provided' in str(er2):
                 status[2].add(emoji)
     return status
 async def _filter(e):
