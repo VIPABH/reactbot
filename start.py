@@ -444,8 +444,8 @@ async def _filter(e):
         await try_forward(e, chat=int(chat) if chat.isdigit() else chat, id=mid, to=e.sender_id)
         return await e.reply('ارسل الان التفاعلات المطلوبة')
     elif step == 'setemoji':
-        valid_emojis = emoji.distinct_emoji_list(text)
-        uninvailde = emoji.replace_emoji(text, replace='').split()
+        valid_emojis = emoji.distinct_emoji_list(e.text)
+        uninvailde = emoji.replace_emoji(e.text, replace='').split()
         if not valid_emojis:return await e.reply("ما لكيت ايموجيات صالحه حته اسويلك بيها تفاعل")
         caption = 'يجري عمل الرياكت...'
         if uninvailde:caption+=f'\n تم تخطي ايموجيات غير صالحه ( {"و ".join(uninvailde)} )'
