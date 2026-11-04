@@ -289,38 +289,41 @@ async def react(event, chat=None, id=None, emojis=None):
                     status[2].add(emoji)
     return status
 async def random_react(event, chat=None, id=None, emojis=None):
-    chat_id = chat if chat else str(event.chat_id)
-    msg_id = id if id else event.message.id
-    status = [0, 0, set()]
+    chat_id = chat if chat else getattr(event, 'chat_id', None)
+    msg_id = id    
+    if isinstance(chat_str := str(chat), str) and "t.me/" in chat_str:
+        parts = chat_str.split("t.me/")[-1].split("/")
+        chat_id = parts[0]
+        if len(parts) > 1 and parts[1].isdigit():
+            msg_id = int(parts[1])
+    msg_id = int(msg_id) if msg_id else event.message.id
+    status = [0, 0, set()]    
     for ABH in ABHS:
         try:
-            peer = PeerChannel(int(chat_id))
+            entity = await ABH.get_entity(chat_id)
+            peer = await ABH.get_input_entity(entity)
         except Exception as er:
-            print(f"{er=}")
-            continue            
+            print(f"فشل جلب القناة العامة: {er}")
+            continue 
         try:
             await ABH(GetMessagesViewsRequest(
                 peer=peer,
-                id=[int(msg_id)],
+                id=[msg_id],
                 increment=True 
             ))
         except Exception as er1:
-            print(f"{er1=}")
-            pass
-        if not peer:
-            return status
+            pass            
         emoji = random.choice(emojis) if emojis else random.choice(['❤️', '🕊', '🌚'])
         try:
             await ABH(SendReactionRequest(
                 peer=peer,
-                msg_id=int(msg_id),
+                msg_id=msg_id,
                 reaction=[ReactionEmoji(emoticon=emoji)],
                 big=False
             ))
             status[0] += 1
             await asyncio.sleep(0.3)
         except Exception as er2:
-            print(f"{er2=}")
             status[1] += 1
             if 'Invalid reaction provided' in str(er2):
                 status[2].add(emoji)
