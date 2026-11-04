@@ -295,7 +295,8 @@ async def random_react(event, chat=None, id=None, emojis=None):
     for ABH in ABHS:
         try:
             peer = PeerChannel(int(chat_id))
-        except Exception:
+        except Exception as er:
+            print(f"{er=}")
             continue            
         try:
             await ABH(GetMessagesViewsRequest(
@@ -303,7 +304,8 @@ async def random_react(event, chat=None, id=None, emojis=None):
                 id=[int(msg_id)],
                 increment=True 
             ))
-        except Exception:
+        except Exception as er1:
+            print(f"{er1=}")
             pass
         if not peer:
             return status
@@ -317,7 +319,8 @@ async def random_react(event, chat=None, id=None, emojis=None):
             ))
             status[0] += 1
             await asyncio.sleep(0.3)
-        except Exception as e:
+        except Exception as er2:
+            print(f"{er2=}")
             status[1] += 1
             if 'Invalid reaction provided' in str(e):
                 status[2].add(emoji)
