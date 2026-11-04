@@ -4,7 +4,7 @@ from telethon.tl.types import ReactionEmoji, PeerChannel
 from telethon.tl.types import MessageEntityCustomEmoji
 from telethon.tl.types import ChannelParticipantAdmin
 from telethon.errors import UserNotParticipantError
-import asyncio, random, re, os, time, emoji
+import asyncio, random, re, os, time, emoji as EMOJI
 from telethon.tl.types import Channel
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -404,8 +404,8 @@ async def _filter(e):
         return await e.reply(caption, buttons=button)
     elif step == 'setreact':
         if not text:return await e.reply('يرجى ارسال نص صالح', buttons=back)
-        valid_emojis = emoji.distinct_emoji_list(text)
-        uninvailde = emoji.replace_emoji(text, replace='').split()
+        valid_emojis = EMOJI.distinct_emoji_list(text)
+        uninvailde = EMOJI.replace_emoji(text, replace='').split()
         caption = f'**النص المدخل** ( `{text}` )\n'
         if valid_emojis:
             caption+= f'تم اضافة ( {', '.join(valid_emojis)} )\n'
@@ -444,8 +444,8 @@ async def _filter(e):
         await try_forward(e, chat=int(chat) if chat.isdigit() else chat, id=mid, to=e.sender_id)
         return await e.reply('ارسل الان التفاعلات المطلوبة')
     elif step == 'setemoji':
-        valid_emojis = emoji.distinct_emoji_list(e.text)
-        uninvailde = emoji.replace_emoji(e.text, replace='').split()
+        valid_emojis = EMOJI.distinct_emoji_list(text)
+        uninvailde = EMOJI.replace_emoji(text, replace='').split()
         if not valid_emojis:return await e.reply("ما لكيت ايموجيات صالحه حته اسويلك بيها تفاعل")
         caption = 'يجري عمل الرياكت...'
         if uninvailde:caption+=f'\n تم تخطي ايموجيات غير صالحه ( {"و ".join(uninvailde)} )'
