@@ -437,12 +437,13 @@ async def _filter(e):
         if not text.startswith('https://t.me/'):return await e.reply('ارسل رابط صالح!', buttons=back)
         chat, mid = extract_channel_and_msg(text)
         if not chat or not mid:return await e.reply('الرابط غير كامل!', buttons=back)
+        chat_entity = await ABH.get_entity(chat)
+        if not chat_entity:return await e.reply('ما لكيت القناة الي طلبتها!')
         if 'temp' not in session[id]:
             session[id]['temp'] = {}
         session[id]['step'] = 'setemoji'
         session[id]['temp']['chat'] = chat
         session[id]['temp']['id'] = mid
-        chat_entity = await ABH.get_entity(chat)
         if not isinstance(chat_entity, Channel) or not chat_entity.broadcast:
             return await e.reply("عذرا صديقي المحادثه الي ارسلتها مو قناة")
         if not chat_entity:return await e.reply('عذرا بس القناة غير موجودة')
@@ -463,9 +464,7 @@ async def _filter(e):
         status_msg = await e.reply(caption)
         chat = session[id]['temp']['chat']
         mid = session[id]['temp']['id']
-        chat_entity = await ABH.get_entity(chat)
-        if not chat_entity:return await e.reply('ما لكيت القناة الي طلبتها!')
-        status = await random_react(e, chat=chat_entity.id, id=mid, emojis=list(valid_emojis))
+        status = await random_react(e, chat=int(chat) if chat.isdigit() else chat, id=mid, emojis=list(valid_emojis))
         if 'temp' in session.get(id, {}):
             del session[id]['temp']
         del session[id]
